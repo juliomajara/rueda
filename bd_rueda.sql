@@ -20,6 +20,7 @@ CREATE TABLE modulos (
 
 CREATE TABLE asignaciones (
   id_asignacion INT AUTO_INCREMENT PRIMARY KEY,
+  conjunto_asignaciones INT UNSIGNED NOT NULL DEFAULT 1,
   id_profesor INT NOT NULL,
   id_modulo INT NOT NULL UNIQUE,
   FOREIGN KEY (id_profesor) REFERENCES profesores(id_profesor)
