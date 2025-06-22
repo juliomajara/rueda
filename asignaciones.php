@@ -141,13 +141,25 @@ $totalDisponibles = array_sum(array_column($disponibles, 'horas'));
             border: 1px solid #ccc;
             background: #f0f0f0;
             cursor: grab;
+            display: inline-block;
+            box-sizing: border-box;
         }
         .dropzone {
             min-height: 30px;
             padding: 5px;
             border: 1px dashed #999;
             margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
         }
+        .modulo.smr1 { background: #ffcccc; }
+        .modulo.smr2 { background: #ff6666; }
+        .modulo.asir1 { background: #ccccff; }
+        .modulo.asir2 { background: #6666ff; }
+        .modulo.daw1 { background: #ccffcc; }
+        .modulo.daw2 { background: #66ff66; }
+        .modulo.dam1 { background: #ffffcc; }
+        .modulo.dam2 { background: #ffff66; }
     </style>
 </head>
 <body>
@@ -172,8 +184,11 @@ $totalDisponibles = array_sum(array_column($disponibles, 'horas'));
 
         <h2>Módulos sin asignar: <span id="totalSinAsignar"><?= $totalDisponibles ?></span>h</h2>
         <div id="modulos" class="dropzone" data-profesor-id="0">
-            <?php foreach ($disponibles as $m): ?>
-                <div class="modulo" draggable="true" data-id="<?= $m['id_modulo'] ?>" data-horas="<?= $m['horas'] ?>">
+            <?php foreach ($disponibles as $m):
+                $cls = strtolower($m['ciclo']) . ($m['curso'] === '1º' ? '1' : '2');
+                $w = $m['horas'] * 30;
+            ?>
+                <div class="modulo <?= $cls ?>" style="width: <?= $w ?>px" draggable="true" data-id="<?= $m['id_modulo'] ?>" data-horas="<?= $m['horas'] ?>">
                     <?= htmlspecialchars($m['nombre']) ?> - <?= $m['horas'] ?>h - <?= $m['curso'] ?> - <?= $m['ciclo'] ?>
                 </div>
             <?php endforeach; ?>
@@ -184,8 +199,11 @@ $totalDisponibles = array_sum(array_column($disponibles, 'horas'));
             <p>Horas asignadas: <span class="total" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>"><?= $d['total'] ?></span> |
                Faltan hasta 20: <span class="faltan <?= $d['faltan'] === 0 ? '' : 'rojo' ?>" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>"><?= $d['faltan'] ?></span></p>
             <div class="dropzone" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>">
-                <?php foreach ($d['modulos'] as $m): ?>
-                    <div class="modulo" draggable="true" data-id="<?= $m['id_modulo'] ?>" data-horas="<?= $m['horas'] ?>">
+                <?php foreach ($d['modulos'] as $m):
+                    $cls = strtolower($m['ciclo']) . ($m['curso'] === '1º' ? '1' : '2');
+                    $w = $m['horas'] * 30;
+                ?>
+                    <div class="modulo <?= $cls ?>" style="width: <?= $w ?>px" draggable="true" data-id="<?= $m['id_modulo'] ?>" data-horas="<?= $m['horas'] ?>">
                         <?= htmlspecialchars($m['nombre']) ?> - <?= $m['horas'] ?>h - <?= $m['curso'] ?> - <?= $m['ciclo'] ?>
                     </div>
                 <?php endforeach; ?>
