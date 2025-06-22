@@ -95,6 +95,9 @@ $modulos = $pdo->query("SELECT * FROM modulos ORDER BY ciclo ASC, curso ASC, nom
 </head>
 <body>
     <h1>Gestión de Profesores y Módulos</h1>
+    <p>
+        <a href="asignaciones.php"><button>Ir a Asignaciones</button></a>
+    </p>
 
     <div style="display: flex; gap: 40px;">
         <!-- Formulario Profesor -->
