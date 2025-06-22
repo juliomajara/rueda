@@ -1,6 +1,26 @@
 <?php
 require 'db.php';
 
+// Asignar módulo a un profesor desde drag & drop (AJAX)
+if (
+    $_SERVER['REQUEST_METHOD'] === 'POST' &&
+    isset($_POST['accion']) &&
+    $_POST['accion'] === 'asignar'
+) {
+    $profesor = (int)$_POST['profesor_id'];
+    $modulo = (int)$_POST['modulo_id'];
+    $conjunto = (int)$_POST['conjunto'];
+
+    $stmt = $pdo->prepare(
+        'INSERT INTO asignaciones (conjunto_asignaciones, id_profesor, id_modulo)
+         VALUES (?, ?, ?)
+         ON DUPLICATE KEY UPDATE id_profesor = VALUES(id_profesor)'
+    );
+    $stmt->execute([$conjunto, $profesor, $modulo]);
+    echo 'ok';
+    exit;
+}
+
 // Crear asignaciones al presionar el boton
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crear'])) {
     try {
@@ -66,11 +86,15 @@ $seleccionado = isset($_GET['conjunto']) ? (int)$_GET['conjunto'] : null;
 
 $profesores = $pdo->query("SELECT * FROM profesores ORDER BY nombre")->fetchAll(PDO::FETCH_ASSOC);
 $datos = [];
+$asignados = [];
 if ($seleccionado !== null) {
     foreach ($profesores as $p) {
-        $stmt = $pdo->prepare("SELECT m.nombre, m.horas, m.curso, m.ciclo FROM asignaciones a JOIN modulos m ON a.id_modulo = m.id_modulo WHERE a.id_profesor = ? AND a.conjunto_asignaciones = ? ORDER BY m.ciclo, m.curso, m.nombre");
+        $stmt = $pdo->prepare("SELECT m.id_modulo, m.nombre, m.horas, m.curso, m.ciclo FROM asignaciones a JOIN modulos m ON a.id_modulo = m.id_modulo WHERE a.id_profesor = ? AND a.conjunto_asignaciones = ? ORDER BY m.ciclo, m.curso, m.nombre");
         $stmt->execute([$p['id_profesor'], $seleccionado]);
         $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($mods as $mo) {
+            $asignados[] = $mo['id_modulo'];
+        }
         $total = array_sum(array_column($mods, 'horas'));
         $faltan = 20 - $total;
         $datos[] = [
@@ -81,6 +105,11 @@ if ($seleccionado !== null) {
         ];
     }
 }
+
+$allModulos = $pdo->query("SELECT * FROM modulos ORDER BY ciclo, curso, nombre")->fetchAll(PDO::FETCH_ASSOC);
+$disponibles = array_filter($allModulos, function($m) use ($asignados) {
+    return !in_array($m['id_modulo'], $asignados);
+});
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -89,6 +118,19 @@ if ($seleccionado !== null) {
     <title>Asignaciones</title>
     <style>
         .rojo { color: red; }
+        .modulo {
+            padding: 5px;
+            margin: 5px;
+            border: 1px solid #ccc;
+            background: #f0f0f0;
+            cursor: grab;
+        }
+        .dropzone {
+            min-height: 30px;
+            padding: 5px;
+            border: 1px dashed #999;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
@@ -108,19 +150,66 @@ if ($seleccionado !== null) {
         <p>No hay asignaciones registradas.</p>
     <?php endif; ?>
 
-    <?php foreach ($datos as $d): ?>
-        <h2><?= htmlspecialchars($d['profesor']['nombre']) ?></h2>
-        <p>Total horas: <?= $d['total'] ?> |
-           Faltan hasta 20: <span class="<?= $d['faltan'] === 0 ? '' : 'rojo' ?>"><?= $d['faltan'] ?></span></p>
-        <?php if ($d['modulos']): ?>
-            <ul>
-            <?php foreach ($d['modulos'] as $m): ?>
-                <li><?= htmlspecialchars($m['nombre']) ?> - <?= $m['horas'] ?>h - <?= $m['curso'] ?> - <?= $m['ciclo'] ?></li>
+    <?php if ($seleccionado !== null): ?>
+        <input type="hidden" id="conjuntoActual" value="<?= $seleccionado ?>">
+
+        <h2>Módulos disponibles</h2>
+        <div id="modulos">
+            <?php foreach ($disponibles as $m): ?>
+                <div class="modulo" draggable="true" data-id="<?= $m['id_modulo'] ?>">
+                    <?= htmlspecialchars($m['nombre']) ?> - <?= $m['horas'] ?>h - <?= $m['curso'] ?> - <?= $m['ciclo'] ?>
+                </div>
             <?php endforeach; ?>
-            </ul>
-        <?php else: ?>
-            <p>No tiene módulos asignados.</p>
-        <?php endif; ?>
-    <?php endforeach; ?>
+        </div>
+
+        <?php foreach ($datos as $d): ?>
+            <h2><?= htmlspecialchars($d['profesor']['nombre']) ?></h2>
+            <p>Total horas: <?= $d['total'] ?> |
+               Faltan hasta 20: <span class="<?= $d['faltan'] === 0 ? '' : 'rojo' ?>"><?= $d['faltan'] ?></span></p>
+            <div class="dropzone" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>">
+                <?php foreach ($d['modulos'] as $m): ?>
+                    <div class="modulo" draggable="true" data-id="<?= $m['id_modulo'] ?>">
+                        <?= htmlspecialchars($m['nombre']) ?> - <?= $m['horas'] ?>h - <?= $m['curso'] ?> - <?= $m['ciclo'] ?>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        <?php endforeach; ?>
+    <?php endif; ?>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.modulo').forEach(m => {
+            m.addEventListener('dragstart', e => {
+                e.dataTransfer.setData('text/plain', m.dataset.id);
+            });
+        });
+
+        document.querySelectorAll('.dropzone').forEach(z => {
+            z.addEventListener('dragover', e => e.preventDefault());
+            z.addEventListener('drop', e => {
+                e.preventDefault();
+                const modId = e.dataTransfer.getData('text/plain');
+                const profId = z.dataset.profesorId;
+                const conjunto = document.getElementById('conjuntoActual').value;
+
+                fetch('asignaciones.php', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                    body: new URLSearchParams({
+                        accion: 'asignar',
+                        profesor_id: profId,
+                        modulo_id: modId,
+                        conjunto: conjunto
+                    })
+                }).then(() => {
+                    const elem = document.querySelector(`.modulo[data-id="${modId}"]`);
+                    if (elem) {
+                        z.appendChild(elem);
+                    }
+                });
+            });
+        });
+    });
+    </script>
 </body>
 </html>
