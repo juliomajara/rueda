@@ -7,7 +7,8 @@ USE rueda;
 CREATE TABLE profesores (
   id_profesor INT AUTO_INCREMENT PRIMARY KEY,
   nombre VARCHAR(100) NOT NULL,
-  horas INT NOT NULL CHECK (horas >= 0)
+  horas INT NOT NULL CHECK (horas >= 0),
+  especialidad ENUM('Informática', 'SAI') NOT NULL
 );
 
 CREATE TABLE modulos (
@@ -16,7 +17,8 @@ CREATE TABLE modulos (
   abreviatura VARCHAR(20) NOT NULL,
   horas INT NOT NULL CHECK (horas > 0),
   curso ENUM('1º', '2º') NOT NULL,
-  ciclo ENUM('SMR', 'DAW', 'DAM', 'ASIR') NOT NULL
+  ciclo ENUM('SMR', 'DAW', 'DAM', 'ASIR') NOT NULL,
+  atribucion ENUM('Informática', 'SAI', 'Ambos') NOT NULL
 );
 
 CREATE TABLE asignaciones (
