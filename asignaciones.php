@@ -203,17 +203,30 @@ $totalDisponibles = array_sum(array_column($disponibles, 'horas'));
         <input type="hidden" id="conjuntoActual" value="<?= $seleccionado ?>">
 
         <h2>Módulos sin asignar: <span id="totalSinAsignar"><?= $totalDisponibles ?></span>h</h2>
-        <div id="modulos" class="dropzone" data-profesor-id="0">
-            <?php foreach ($disponibles as $m):
-                $cls = strtolower($m['ciclo']) . ($m['curso'] === '1º' ? '1' : '2');
-                $w = $m['horas'] * 30;
-                $cursoCiclo = $m['ciclo'] . ($m['curso'] === '1º' ? '1' : '2');
-            ?>
-                <div class="modulo <?= $cls ?>" style="width: <?= $w ?>px" draggable="true" data-id="<?= $m['id_modulo'] ?>" data-horas="<?= $m['horas'] ?>" title="<?= htmlspecialchars($m['nombre']) ?> - <?= $cursoCiclo ?>">
-                    <?= htmlspecialchars($m['abreviatura']) ?> (<?= $m['horas'] ?>h)
-                </div>
-            <?php endforeach; ?>
-        </div>
+        <?php
+            $leyendas = ['SMRA1','SMRA2','SMRB1','SMRB2','ASIR1','ASIR2','DAM1','DAM2','DAW1','DAW2'];
+            $grupos = [];
+            foreach ($disponibles as $m) {
+                $key = $m['ciclo'] . ($m['curso'] === '1º' ? '1' : '2');
+                $grupos[$key][] = $m;
+            }
+        ?>
+        <?php foreach ($leyendas as $ley): ?>
+            <p><strong><?= $ley ?></strong></p>
+            <div class="dropzone" data-profesor-id="0">
+                <?php if (!empty($grupos[$ley])): ?>
+                    <?php foreach ($grupos[$ley] as $m):
+                        $cls = strtolower($m['ciclo']) . ($m['curso'] === '1º' ? '1' : '2');
+                        $w = $m['horas'] * 30;
+                        $cursoCiclo = $m['ciclo'] . ($m['curso'] === '1º' ? '1' : '2');
+                    ?>
+                        <div class="modulo <?= $cls ?>" style="width: <?= $w ?>px" draggable="true" data-id="<?= $m['id_modulo'] ?>" data-horas="<?= $m['horas'] ?>" title="<?= htmlspecialchars($m['nombre']) ?> - <?= $cursoCiclo ?>">
+                            <?= htmlspecialchars($m['abreviatura']) ?> (<?= $m['horas'] ?>h)
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </div>
+        <?php endforeach; ?>
 
         <?php foreach ($datos as $d): ?>
             <h2><?= htmlspecialchars($d['profesor']['nombre']) ?></h2>
@@ -236,6 +249,7 @@ $totalDisponibles = array_sum(array_column($disponibles, 'horas'));
     <script>
     document.addEventListener('DOMContentLoaded', () => {
         function updateTotals() {
+            let sinAsignar = 0;
             document.querySelectorAll('.dropzone').forEach(z => {
                 const profId = z.dataset.profesorId;
                 let total = 0;
@@ -243,8 +257,7 @@ $totalDisponibles = array_sum(array_column($disponibles, 'horas'));
                     total += parseInt(m.dataset.horas, 10);
                 });
                 if (profId === '0') {
-                    const sin = document.getElementById('totalSinAsignar');
-                    if (sin) sin.textContent = total;
+                    sinAsignar += total;
                 } else {
                     const totalElem = document.querySelector(`.total[data-profesor-id="${profId}"]`);
                     const faltanElem = document.querySelector(`.faltan[data-profesor-id="${profId}"]`);
@@ -257,6 +270,8 @@ $totalDisponibles = array_sum(array_column($disponibles, 'horas'));
                     }
                 }
             });
+            const sin = document.getElementById('totalSinAsignar');
+            if (sin) sin.textContent = sinAsignar;
         }
 
         document.querySelectorAll('.modulo').forEach(m => {
