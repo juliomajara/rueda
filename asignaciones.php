@@ -105,7 +105,7 @@ $datos = [];
 $asignados = [];
 if ($seleccionado !== null) {
     foreach ($profesores as $p) {
-        $stmt = $pdo->prepare("SELECT m.id_modulo, m.nombre, m.horas, m.curso, m.ciclo FROM asignaciones a JOIN modulos m ON a.id_modulo = m.id_modulo WHERE a.id_profesor = ? AND a.conjunto_asignaciones = ? ORDER BY m.ciclo, m.curso, m.nombre");
+        $stmt = $pdo->prepare("SELECT m.id_modulo, m.nombre, m.abreviatura, m.horas, m.curso, m.ciclo FROM asignaciones a JOIN modulos m ON a.id_modulo = m.id_modulo WHERE a.id_profesor = ? AND a.conjunto_asignaciones = ? ORDER BY m.ciclo, m.curso, m.nombre");
         $stmt->execute([$p['id_profesor'], $seleccionado]);
         $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
         foreach ($mods as $mo) {
@@ -187,9 +187,10 @@ $totalDisponibles = array_sum(array_column($disponibles, 'horas'));
             <?php foreach ($disponibles as $m):
                 $cls = strtolower($m['ciclo']) . ($m['curso'] === '1º' ? '1' : '2');
                 $w = $m['horas'] * 30;
+                $cursoCiclo = $m['ciclo'] . ($m['curso'] === '1º' ? '1' : '2');
             ?>
-                <div class="modulo <?= $cls ?>" style="width: <?= $w ?>px" draggable="true" data-id="<?= $m['id_modulo'] ?>" data-horas="<?= $m['horas'] ?>">
-                    <?= htmlspecialchars($m['nombre']) ?> - <?= $m['horas'] ?>h - <?= $m['curso'] ?> - <?= $m['ciclo'] ?>
+                <div class="modulo <?= $cls ?>" style="width: <?= $w ?>px" draggable="true" data-id="<?= $m['id_modulo'] ?>" data-horas="<?= $m['horas'] ?>" title="<?= htmlspecialchars($m['nombre']) ?> - <?= $cursoCiclo ?>">
+                    <?= htmlspecialchars($m['abreviatura']) ?> (<?= $m['horas'] ?>h)
                 </div>
             <?php endforeach; ?>
         </div>
@@ -202,9 +203,10 @@ $totalDisponibles = array_sum(array_column($disponibles, 'horas'));
                 <?php foreach ($d['modulos'] as $m):
                     $cls = strtolower($m['ciclo']) . ($m['curso'] === '1º' ? '1' : '2');
                     $w = $m['horas'] * 30;
+                    $cursoCiclo = $m['ciclo'] . ($m['curso'] === '1º' ? '1' : '2');
                 ?>
-                    <div class="modulo <?= $cls ?>" style="width: <?= $w ?>px" draggable="true" data-id="<?= $m['id_modulo'] ?>" data-horas="<?= $m['horas'] ?>">
-                        <?= htmlspecialchars($m['nombre']) ?> - <?= $m['horas'] ?>h - <?= $m['curso'] ?> - <?= $m['ciclo'] ?>
+                    <div class="modulo <?= $cls ?>" style="width: <?= $w ?>px" draggable="true" data-id="<?= $m['id_modulo'] ?>" data-horas="<?= $m['horas'] ?>" title="<?= htmlspecialchars($m['nombre']) ?> - <?= $cursoCiclo ?>">
+                        <?= htmlspecialchars($m['abreviatura']) ?> (<?= $m['horas'] ?>h)
                     </div>
                 <?php endforeach; ?>
             </div>
