@@ -83,7 +83,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['tipo'] === 'modulo') {
 
 // OBTENER DATOS PARA LISTADOS
 $profesores = $pdo->query("SELECT * FROM profesores ORDER BY nombre ASC")->fetchAll(PDO::FETCH_ASSOC);
-$modulos = $pdo->query("SELECT * FROM modulos ORDER BY nombre ASC")->fetchAll(PDO::FETCH_ASSOC);
+$modulos = $pdo->query("SELECT * FROM modulos ORDER BY ciclo ASC, curso ASC, nombre ASC")
+    ->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>
