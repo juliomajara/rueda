@@ -12,6 +12,16 @@ try {
     die("Error en la conexión: " . $e->getMessage());
 }
 
+// Obtener posibles valores del campo ciclo desde la base de datos
+$ciclos = [];
+$stmt = $pdo->query("SHOW COLUMNS FROM modulos LIKE 'ciclo'");
+$col = $stmt->fetch(PDO::FETCH_ASSOC);
+if ($col && isset($col['Type']) && preg_match("/^enum\((.*)\)$/", $col['Type'], $m)) {
+    $ciclos = array_map(function ($v) {
+        return trim($v, "' ");
+    }, explode(',', $m[1]));
+}
+
 // ELIMINAR
 if (isset($_GET['eliminar'], $_GET['tipo'])) {
     $id = (int)$_GET['eliminar'];
@@ -69,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['tipo'] === 'modulo') {
     $curso = $_POST['curso'];
     $ciclo = $_POST['ciclo'];
 
-    if ($nombre !== '' && $abreviatura !== '' && $horas > 0 && in_array($curso, ['1º', '2º']) && in_array($ciclo, ['SMR', 'DAW', 'DAM', 'ASIR'])) {
+    if ($nombre !== '' && $abreviatura !== '' && $horas > 0 && in_array($curso, ['1º', '2º']) && in_array($ciclo, $ciclos)) {
         if (isset($_POST['id'])) {
             $stmt = $pdo->prepare("UPDATE modulos SET nombre = ?, abreviatura = ?, horas = ?, curso = ?, ciclo = ? WHERE id_modulo = ?");
             $stmt->execute([$nombre, $abreviatura, $horas, $curso, $ciclo, $_POST['id']]);
@@ -168,7 +178,7 @@ $modulos = $pdo->query("SELECT * FROM modulos ORDER BY ciclo ASC, curso ASC, nom
                 <label>Ciclo:</label><br>
                 <select name="ciclo" required>
                     <option value="">Seleccione</option>
-                    <?php foreach (['SMR', 'DAW', 'DAM', 'ASIR'] as $c): ?>
+                    <?php foreach ($ciclos as $c): ?>
                         <option value="<?= $c ?>" <?= isset($editData) && $editData['ciclo'] === $c ? 'selected' : '' ?>><?= $c ?></option>
                     <?php endforeach; ?>
                 </select><br><br>
