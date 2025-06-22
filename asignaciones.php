@@ -57,20 +57,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crear'])) {
     exit;
 }
 
+$conjuntos = $pdo->query("SELECT DISTINCT conjunto_asignaciones FROM asignaciones ORDER BY conjunto_asignaciones")->fetchAll(PDO::FETCH_COLUMN);
+$seleccionado = isset($_GET['conjunto']) ? (int)$_GET['conjunto'] : null;
+
 $profesores = $pdo->query("SELECT * FROM profesores ORDER BY nombre")->fetchAll(PDO::FETCH_ASSOC);
 $datos = [];
-foreach ($profesores as $p) {
-    $stmt = $pdo->prepare("SELECT m.nombre, m.horas, m.curso, m.ciclo FROM asignaciones a JOIN modulos m ON a.id_modulo = m.id_modulo WHERE a.id_profesor = ? ORDER BY m.ciclo, m.curso, m.nombre");
-    $stmt->execute([$p['id_profesor']]);
-    $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    $total = array_sum(array_column($mods, 'horas'));
-    $faltan = 20 - $total;
-    $datos[] = [
-        'profesor' => $p,
-        'modulos' => $mods,
-        'total' => $total,
-        'faltan' => $faltan
-    ];
+if ($seleccionado !== null) {
+    foreach ($profesores as $p) {
+        $stmt = $pdo->prepare("SELECT m.nombre, m.horas, m.curso, m.ciclo FROM asignaciones a JOIN modulos m ON a.id_modulo = m.id_modulo WHERE a.id_profesor = ? AND a.conjunto_asignaciones = ? ORDER BY m.ciclo, m.curso, m.nombre");
+        $stmt->execute([$p['id_profesor'], $seleccionado]);
+        $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $total = array_sum(array_column($mods, 'horas'));
+        $faltan = 20 - $total;
+        $datos[] = [
+            'profesor' => $p,
+            'modulos' => $mods,
+            'total' => $total,
+            'faltan' => $faltan
+        ];
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -87,6 +92,17 @@ foreach ($profesores as $p) {
     <form method="post">
         <button type="submit" name="crear">Crear asignación</button>
     </form>
+
+    <?php if ($conjuntos): ?>
+        <h2>Conjuntos disponibles</h2>
+        <ul>
+            <?php foreach ($conjuntos as $c): ?>
+                <li><a href="?conjunto=<?= $c ?>">Asignación <?= $c ?></a></li>
+            <?php endforeach; ?>
+        </ul>
+    <?php else: ?>
+        <p>No hay asignaciones registradas.</p>
+    <?php endif; ?>
 
     <?php foreach ($datos as $d): ?>
         <h2><?= htmlspecialchars($d['profesor']['nombre']) ?></h2>
