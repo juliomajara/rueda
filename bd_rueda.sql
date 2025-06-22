@@ -22,7 +22,8 @@ CREATE TABLE asignaciones (
   id_asignacion INT AUTO_INCREMENT PRIMARY KEY,
   conjunto_asignaciones INT UNSIGNED NOT NULL DEFAULT 1,
   id_profesor INT NOT NULL,
-  id_modulo INT NOT NULL UNIQUE,
+  id_modulo INT NOT NULL,
+  UNIQUE KEY uk_conjunto_modulo (conjunto_asignaciones, id_modulo),
   FOREIGN KEY (id_profesor) REFERENCES profesores(id_profesor)
     ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY (id_modulo) REFERENCES modulos(id_modulo)
