@@ -21,6 +21,22 @@ if (
     exit;
 }
 
+// Liberar módulo desde drag & drop (AJAX)
+if (
+    $_SERVER['REQUEST_METHOD'] === 'POST' &&
+    isset($_POST['accion']) &&
+    $_POST['accion'] === 'liberar'
+) {
+    $modulo = (int)$_POST['modulo_id'];
+    $conjunto = (int)$_POST['conjunto'];
+    $stmt = $pdo->prepare(
+        'DELETE FROM asignaciones WHERE id_modulo = ? AND conjunto_asignaciones = ?'
+    );
+    $stmt->execute([$modulo, $conjunto]);
+    echo 'ok';
+    exit;
+}
+
 // Crear asignaciones al presionar el boton
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crear'])) {
     try {
@@ -110,6 +126,7 @@ $allModulos = $pdo->query("SELECT * FROM modulos ORDER BY ciclo, curso, nombre")
 $disponibles = array_filter($allModulos, function($m) use ($asignados) {
     return !in_array($m['id_modulo'], $asignados);
 });
+$totalDisponibles = array_sum(array_column($disponibles, 'horas'));
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -153,10 +170,10 @@ $disponibles = array_filter($allModulos, function($m) use ($asignados) {
     <?php if ($seleccionado !== null): ?>
         <input type="hidden" id="conjuntoActual" value="<?= $seleccionado ?>">
 
-        <h2>Módulos disponibles</h2>
-        <div id="modulos">
+        <h2>Módulos sin asignar: <span id="totalSinAsignar"><?= $totalDisponibles ?></span>h</h2>
+        <div id="modulos" class="dropzone" data-profesor-id="0">
             <?php foreach ($disponibles as $m): ?>
-                <div class="modulo" draggable="true" data-id="<?= $m['id_modulo'] ?>">
+                <div class="modulo" draggable="true" data-id="<?= $m['id_modulo'] ?>" data-horas="<?= $m['horas'] ?>">
                     <?= htmlspecialchars($m['nombre']) ?> - <?= $m['horas'] ?>h - <?= $m['curso'] ?> - <?= $m['ciclo'] ?>
                 </div>
             <?php endforeach; ?>
@@ -164,11 +181,11 @@ $disponibles = array_filter($allModulos, function($m) use ($asignados) {
 
         <?php foreach ($datos as $d): ?>
             <h2><?= htmlspecialchars($d['profesor']['nombre']) ?></h2>
-            <p>Total horas: <?= $d['total'] ?> |
-               Faltan hasta 20: <span class="<?= $d['faltan'] === 0 ? '' : 'rojo' ?>"><?= $d['faltan'] ?></span></p>
+            <p>Horas asignadas: <span class="total" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>"><?= $d['total'] ?></span> |
+               Faltan hasta 20: <span class="faltan <?= $d['faltan'] === 0 ? '' : 'rojo' ?>" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>"><?= $d['faltan'] ?></span></p>
             <div class="dropzone" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>">
                 <?php foreach ($d['modulos'] as $m): ?>
-                    <div class="modulo" draggable="true" data-id="<?= $m['id_modulo'] ?>">
+                    <div class="modulo" draggable="true" data-id="<?= $m['id_modulo'] ?>" data-horas="<?= $m['horas'] ?>">
                         <?= htmlspecialchars($m['nombre']) ?> - <?= $m['horas'] ?>h - <?= $m['curso'] ?> - <?= $m['ciclo'] ?>
                     </div>
                 <?php endforeach; ?>
@@ -178,6 +195,30 @@ $disponibles = array_filter($allModulos, function($m) use ($asignados) {
 
     <script>
     document.addEventListener('DOMContentLoaded', () => {
+        function updateTotals() {
+            document.querySelectorAll('.dropzone').forEach(z => {
+                const profId = z.dataset.profesorId;
+                let total = 0;
+                z.querySelectorAll('.modulo').forEach(m => {
+                    total += parseInt(m.dataset.horas, 10);
+                });
+                if (profId === '0') {
+                    const sin = document.getElementById('totalSinAsignar');
+                    if (sin) sin.textContent = total;
+                } else {
+                    const totalElem = document.querySelector(`.total[data-profesor-id="${profId}"]`);
+                    const faltanElem = document.querySelector(`.faltan[data-profesor-id="${profId}"]`);
+                    if (totalElem) totalElem.textContent = total;
+                    if (faltanElem) {
+                        const faltan = 20 - total;
+                        faltanElem.textContent = faltan;
+                        if (faltan === 0) faltanElem.classList.remove('rojo');
+                        else faltanElem.classList.add('rojo');
+                    }
+                }
+            });
+        }
+
         document.querySelectorAll('.modulo').forEach(m => {
             m.addEventListener('dragstart', e => {
                 e.dataTransfer.setData('text/plain', m.dataset.id);
@@ -191,12 +232,13 @@ $disponibles = array_filter($allModulos, function($m) use ($asignados) {
                 const modId = e.dataTransfer.getData('text/plain');
                 const profId = z.dataset.profesorId;
                 const conjunto = document.getElementById('conjuntoActual').value;
+                const accion = profId === '0' ? 'liberar' : 'asignar';
 
                 fetch('asignaciones.php', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/x-www-form-urlencoded'},
                     body: new URLSearchParams({
-                        accion: 'asignar',
+                        accion: accion,
                         profesor_id: profId,
                         modulo_id: modId,
                         conjunto: conjunto
@@ -205,10 +247,13 @@ $disponibles = array_filter($allModulos, function($m) use ($asignados) {
                     const elem = document.querySelector(`.modulo[data-id="${modId}"]`);
                     if (elem) {
                         z.appendChild(elem);
+                        updateTotals();
                     }
                 });
             });
         });
+
+        updateTotals();
     });
     </script>
 </body>
