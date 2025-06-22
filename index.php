@@ -22,6 +22,26 @@ if ($col && isset($col['Type']) && preg_match("/^enum\((.*)\)$/", $col['Type'], 
     }, explode(',', $m[1]));
 }
 
+// Posibles valores para especialidad de profesores
+$especialidades = [];
+$stmt = $pdo->query("SHOW COLUMNS FROM profesores LIKE 'especialidad'");
+$col = $stmt->fetch(PDO::FETCH_ASSOC);
+if ($col && isset($col['Type']) && preg_match("/^enum\((.*)\)$/", $col['Type'], $m)) {
+    $especialidades = array_map(function ($v) {
+        return trim($v, "' ");
+    }, explode(',', $m[1]));
+}
+
+// Posibles valores para atribución de módulos
+$atribuciones = [];
+$stmt = $pdo->query("SHOW COLUMNS FROM modulos LIKE 'atribucion'");
+$col = $stmt->fetch(PDO::FETCH_ASSOC);
+if ($col && isset($col['Type']) && preg_match("/^enum\((.*)\)$/", $col['Type'], $m)) {
+    $atribuciones = array_map(function ($v) {
+        return trim($v, "' ");
+    }, explode(',', $m[1]));
+}
+
 // ELIMINAR
 if (isset($_GET['eliminar'], $_GET['tipo'])) {
     $id = (int)$_GET['eliminar'];
@@ -57,14 +77,15 @@ if (isset($_GET['editar'], $_GET['tipo'])) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['tipo'] === 'profesor') {
     $nombre = trim($_POST['nombre']);
     $horas = (int)$_POST['horas'];
+    $especialidad = $_POST['especialidad'];
 
-    if ($nombre !== '' && $horas >= 0) {
+    if ($nombre !== '' && $horas >= 0 && in_array($especialidad, $especialidades)) {
         if (isset($_POST['id'])) {
-            $stmt = $pdo->prepare("UPDATE profesores SET nombre = ?, horas = ? WHERE id_profesor = ?");
-            $stmt->execute([$nombre, $horas, $_POST['id']]);
+            $stmt = $pdo->prepare("UPDATE profesores SET nombre = ?, horas = ?, especialidad = ? WHERE id_profesor = ?");
+            $stmt->execute([$nombre, $horas, $especialidad, $_POST['id']]);
         } else {
-            $stmt = $pdo->prepare("INSERT INTO profesores (nombre, horas) VALUES (?, ?)");
-            $stmt->execute([$nombre, $horas]);
+            $stmt = $pdo->prepare("INSERT INTO profesores (nombre, horas, especialidad) VALUES (?, ?, ?)");
+            $stmt->execute([$nombre, $horas, $especialidad]);
         }
     }
     header("Location: index.php");
@@ -78,14 +99,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['tipo'] === 'modulo') {
     $horas = (int)$_POST['horas'];
     $curso = $_POST['curso'];
     $ciclo = $_POST['ciclo'];
+    $atribucion = $_POST['atribucion'];
 
-    if ($nombre !== '' && $abreviatura !== '' && $horas > 0 && in_array($curso, ['1º', '2º']) && in_array($ciclo, $ciclos)) {
+    if ($nombre !== '' && $abreviatura !== '' && $horas > 0 && in_array($curso, ['1º', '2º']) && in_array($ciclo, $ciclos) && in_array($atribucion, $atribuciones)) {
         if (isset($_POST['id'])) {
-            $stmt = $pdo->prepare("UPDATE modulos SET nombre = ?, abreviatura = ?, horas = ?, curso = ?, ciclo = ? WHERE id_modulo = ?");
-            $stmt->execute([$nombre, $abreviatura, $horas, $curso, $ciclo, $_POST['id']]);
+            $stmt = $pdo->prepare("UPDATE modulos SET nombre = ?, abreviatura = ?, horas = ?, curso = ?, ciclo = ?, atribucion = ? WHERE id_modulo = ?");
+            $stmt->execute([$nombre, $abreviatura, $horas, $curso, $ciclo, $atribucion, $_POST['id']]);
         } else {
-            $stmt = $pdo->prepare("INSERT INTO modulos (nombre, abreviatura, horas, curso, ciclo) VALUES (?, ?, ?, ?, ?)");
-            $stmt->execute([$nombre, $abreviatura, $horas, $curso, $ciclo]);
+            $stmt = $pdo->prepare("INSERT INTO modulos (nombre, abreviatura, horas, curso, ciclo, atribucion) VALUES (?, ?, ?, ?, ?, ?)");
+            $stmt->execute([$nombre, $abreviatura, $horas, $curso, $ciclo, $atribucion]);
         }
     }
     header("Location: index.php");
@@ -127,19 +149,28 @@ $modulos = $pdo->query("SELECT * FROM modulos ORDER BY ciclo ASC, curso ASC, nom
                 <label>Horas totales:</label><br>
                 <input type="number" name="horas" min="0" value="<?= $editData['horas'] ?? '' ?>" required><br><br>
 
+                <label>Especialidad:</label><br>
+                <select name="especialidad" required>
+                    <option value="">Seleccione</option>
+                    <?php foreach ($especialidades as $e): ?>
+                        <option value="<?= $e ?>" <?= isset($editData) && $editData['especialidad'] === $e ? 'selected' : '' ?>><?= $e ?></option>
+                    <?php endforeach; ?>
+                </select><br><br>
+
                 <button type="submit"><?= isset($editType) && $editType === 'profesor' ? 'Actualizar' : 'Agregar' ?></button>
             </form>
 
             <h3>Listado de Profesores</h3>
             <table border="1" cellpadding="5">
                 <thead>
-                    <tr><th>Nombre</th><th>Horas</th><th>Acciones</th></tr>
+                    <tr><th>Nombre</th><th>Horas</th><th>Especialidad</th><th>Acciones</th></tr>
                 </thead>
                 <tbody>
                     <?php foreach ($profesores as $p): ?>
                         <tr>
                             <td><?= htmlspecialchars($p['nombre']) ?></td>
                             <td><?= $p['horas'] ?></td>
+                            <td><?= $p['especialidad'] ?></td>
                             <td>
                                 <a href="?editar=<?= $p['id_profesor'] ?>&tipo=profesor">Editar</a> |
                                 <a href="?eliminar=<?= $p['id_profesor'] ?>&tipo=profesor" onclick="return confirm('¿Seguro que quieres eliminar este profesor?')">Eliminar</a>
@@ -183,13 +214,21 @@ $modulos = $pdo->query("SELECT * FROM modulos ORDER BY ciclo ASC, curso ASC, nom
                     <?php endforeach; ?>
                 </select><br><br>
 
+                <label>Atribución:</label><br>
+                <select name="atribucion" required>
+                    <option value="">Seleccione</option>
+                    <?php foreach ($atribuciones as $a): ?>
+                        <option value="<?= $a ?>" <?= isset($editData) && $editData['atribucion'] === $a ? 'selected' : '' ?>><?= $a ?></option>
+                    <?php endforeach; ?>
+                </select><br><br>
+
                 <button type="submit"><?= isset($editType) && $editType === 'modulo' ? 'Actualizar' : 'Agregar' ?></button>
             </form>
 
             <h3>Listado de Módulos</h3>
             <table border="1" cellpadding="5">
                 <thead>
-                    <tr><th>Nombre</th><th>Abreviatura</th><th>Horas</th><th>Curso</th><th>Ciclo</th><th>Acciones</th></tr>
+                    <tr><th>Nombre</th><th>Abreviatura</th><th>Horas</th><th>Curso</th><th>Ciclo</th><th>Atribución</th><th>Acciones</th></tr>
                 </thead>
                 <tbody>
                     <?php foreach ($modulos as $m): ?>
@@ -199,6 +238,7 @@ $modulos = $pdo->query("SELECT * FROM modulos ORDER BY ciclo ASC, curso ASC, nom
                             <td><?= $m['horas'] ?></td>
                             <td><?= $m['curso'] ?></td>
                             <td><?= $m['ciclo'] ?></td>
+                            <td><?= $m['atribucion'] ?></td>
                             <td>
                                 <a href="?editar=<?= $m['id_modulo'] ?>&tipo=modulo">Editar</a> |
                                 <a href="?eliminar=<?= $m['id_modulo'] ?>&tipo=modulo" onclick="return confirm('¿Seguro que quieres eliminar este módulo?')">Eliminar</a>
