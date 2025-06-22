@@ -13,6 +13,7 @@ CREATE TABLE profesores (
 CREATE TABLE modulos (
   id_modulo INT AUTO_INCREMENT PRIMARY KEY,
   nombre VARCHAR(100) NOT NULL,
+  abreviatura VARCHAR(20) NOT NULL,
   horas INT NOT NULL CHECK (horas > 0),
   curso ENUM('1º', '2º') NOT NULL,
   ciclo ENUM('SMR', 'DAW', 'DAM', 'ASIR') NOT NULL

@@ -64,17 +64,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['tipo'] === 'profesor') {
 // INSERTAR MÓDULO
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['tipo'] === 'modulo') {
     $nombre = trim($_POST['nombre']);
+    $abreviatura = trim($_POST['abreviatura']);
     $horas = (int)$_POST['horas'];
     $curso = $_POST['curso'];
     $ciclo = $_POST['ciclo'];
 
-    if ($nombre !== '' && $horas > 0 && in_array($curso, ['1º', '2º']) && in_array($ciclo, ['SMR', 'DAW', 'DAM', 'ASIR'])) {
+    if ($nombre !== '' && $abreviatura !== '' && $horas > 0 && in_array($curso, ['1º', '2º']) && in_array($ciclo, ['SMR', 'DAW', 'DAM', 'ASIR'])) {
         if (isset($_POST['id'])) {
-            $stmt = $pdo->prepare("UPDATE modulos SET nombre = ?, horas = ?, curso = ?, ciclo = ? WHERE id_modulo = ?");
-            $stmt->execute([$nombre, $horas, $curso, $ciclo, $_POST['id']]);
+            $stmt = $pdo->prepare("UPDATE modulos SET nombre = ?, abreviatura = ?, horas = ?, curso = ?, ciclo = ? WHERE id_modulo = ?");
+            $stmt->execute([$nombre, $abreviatura, $horas, $curso, $ciclo, $_POST['id']]);
         } else {
-            $stmt = $pdo->prepare("INSERT INTO modulos (nombre, horas, curso, ciclo) VALUES (?, ?, ?, ?)");
-            $stmt->execute([$nombre, $horas, $curso, $ciclo]);
+            $stmt = $pdo->prepare("INSERT INTO modulos (nombre, abreviatura, horas, curso, ciclo) VALUES (?, ?, ?, ?, ?)");
+            $stmt->execute([$nombre, $abreviatura, $horas, $curso, $ciclo]);
         }
     }
     header("Location: index.php");
@@ -108,6 +109,7 @@ $modulos = $pdo->query("SELECT * FROM modulos ORDER BY ciclo ASC, curso ASC, nom
                 <?php if (isset($editType) && $editType === 'profesor'): ?>
                     <input type="hidden" name="id" value="<?= $editData['id_profesor'] ?>">
                 <?php endif; ?>
+
 
                 <label>Nombre:</label><br>
                 <input type="text" name="nombre" value="<?= $editData['nombre'] ?? '' ?>" required><br><br>
@@ -150,6 +152,9 @@ $modulos = $pdo->query("SELECT * FROM modulos ORDER BY ciclo ASC, curso ASC, nom
                 <label>Nombre:</label><br>
                 <input type="text" name="nombre" value="<?= $editData['nombre'] ?? '' ?>" required><br><br>
 
+                <label>Abreviatura:</label><br>
+                <input type="text" name="abreviatura" value="<?= $editData['abreviatura'] ?? '' ?>" required><br><br>
+
                 <label>Horas:</label><br>
                 <input type="number" name="horas" min="1" value="<?= $editData['horas'] ?? '' ?>" required><br><br>
 
@@ -174,12 +179,13 @@ $modulos = $pdo->query("SELECT * FROM modulos ORDER BY ciclo ASC, curso ASC, nom
             <h3>Listado de Módulos</h3>
             <table border="1" cellpadding="5">
                 <thead>
-                    <tr><th>Nombre</th><th>Horas</th><th>Curso</th><th>Ciclo</th><th>Acciones</th></tr>
+                    <tr><th>Nombre</th><th>Abreviatura</th><th>Horas</th><th>Curso</th><th>Ciclo</th><th>Acciones</th></tr>
                 </thead>
                 <tbody>
                     <?php foreach ($modulos as $m): ?>
                         <tr>
                             <td><?= htmlspecialchars($m['nombre']) ?></td>
+                            <td><?= htmlspecialchars($m['abreviatura']) ?></td>
                             <td><?= $m['horas'] ?></td>
                             <td><?= $m['curso'] ?></td>
                             <td><?= $m['ciclo'] ?></td>
