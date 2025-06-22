@@ -5,8 +5,10 @@ require 'db.php';
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crear'])) {
     try {
         $pdo->beginTransaction();
-        // Limpiar asignaciones previas
-        $pdo->exec("DELETE FROM asignaciones");
+        // Calcular el número de conjunto para esta asignación
+        $nuevoConjunto = (int)$pdo->query(
+            "SELECT IFNULL(MAX(conjunto_asignaciones), 0) + 1 FROM asignaciones"
+        )->fetchColumn();
 
         $profesores = $pdo->query("SELECT id_profesor FROM profesores ORDER BY id_profesor")->fetchAll(PDO::FETCH_ASSOC);
         $modulos = $pdo->query("SELECT id_modulo, horas FROM modulos ORDER BY horas DESC")->fetchAll(PDO::FETCH_ASSOC);
@@ -42,8 +44,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crear'])) {
             }
 
             if ($seleccion !== null) {
-                $stmt = $pdo->prepare("INSERT INTO asignaciones (id_profesor, id_modulo) VALUES (?, ?)");
-                $stmt->execute([$seleccion, $m['id_modulo']]);
+                $stmt = $pdo->prepare(
+                    "INSERT INTO asignaciones (conjunto_asignaciones, id_profesor, id_modulo) VALUES (?, ?, ?)"
+                );
+                $stmt->execute([$nuevoConjunto, $seleccion, $m['id_modulo']]);
                 $horas[$seleccion] += $m['horas'];
             }
         }
@@ -53,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crear'])) {
         $pdo->rollBack();
         die('Error al crear asignaciones: ' . $e->getMessage());
     }
-    header('Location: asignaciones.php');
+    header('Location: asignaciones.php?conjunto=' . $nuevoConjunto);
     exit;
 }
 
