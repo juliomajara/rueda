@@ -122,9 +122,25 @@ if ($seleccionado !== null) {
     }
 }
 
-$allModulos = $pdo->query("SELECT * FROM modulos ORDER BY ciclo, curso, nombre")->fetchAll(PDO::FETCH_ASSOC);
+$allModulos = $pdo->query("SELECT * FROM modulos")->fetchAll(PDO::FETCH_ASSOC);
 $disponibles = array_filter($allModulos, function($m) use ($asignados) {
     return !in_array($m['id_modulo'], $asignados);
+});
+$ordenCiclos = ['SMRA', 'SMRB', 'ASIR', 'DAM', 'DAW'];
+usort($disponibles, function($a, $b) use ($ordenCiclos) {
+    $posA = array_search($a['ciclo'], $ordenCiclos);
+    $posB = array_search($b['ciclo'], $ordenCiclos);
+    $posA = $posA === false ? count($ordenCiclos) : $posA;
+    $posB = $posB === false ? count($ordenCiclos) : $posB;
+
+    if ($posA === $posB) {
+        if ($a['curso'] === $b['curso']) {
+            return strcmp($a['nombre'], $b['nombre']);
+        }
+        return $a['curso'] === '1º' ? -1 : 1;
+    }
+
+    return $posA < $posB ? -1 : 1;
 });
 $totalDisponibles = array_sum(array_column($disponibles, 'horas'));
 ?>
