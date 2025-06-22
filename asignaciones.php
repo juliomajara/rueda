@@ -152,6 +152,10 @@ $totalDisponibles = array_sum(array_column($disponibles, 'horas'));
             display: flex;
             flex-wrap: wrap;
         }
+        .modulo.smra1 { background: #ffcccc; }
+        .modulo.smra2 { background: #ff6666; }
+        .modulo.smrb1 { background: #ffd9b3; }
+        .modulo.smrb2 { background: #ff9900; }
         .modulo.smr1 { background: #ffcccc; }
         .modulo.smr2 { background: #ff6666; }
         .modulo.asir1 { background: #ccccff; }
