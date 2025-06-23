@@ -107,6 +107,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crear'])) {
     exit;
 }
 
+// Guardar la asignación actual en un nuevo conjunto
+if (
+    $_SERVER['REQUEST_METHOD'] === 'POST' &&
+    isset($_POST['guardar']) &&
+    isset($_POST['conjunto_actual'])
+) {
+    $actual = (int)$_POST['conjunto_actual'];
+    try {
+        $pdo->beginTransaction();
+        $nuevoConjunto = (int)$pdo->query("SELECT IFNULL(MAX(conjunto_asignaciones), 0) + 1 FROM asignaciones")->fetchColumn();
+        $stmt = $pdo->prepare("INSERT INTO asignaciones (conjunto_asignaciones, id_profesor, id_modulo) SELECT ?, id_profesor, id_modulo FROM asignaciones WHERE conjunto_asignaciones = ?");
+        $stmt->execute([$nuevoConjunto, $actual]);
+        $pdo->commit();
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        die('Error al guardar asignaciones: ' . $e->getMessage());
+    }
+    header('Location: asignaciones.php?conjunto=' . $nuevoConjunto);
+    exit;
+}
+
 $conjuntos = $pdo->query("SELECT DISTINCT conjunto_asignaciones FROM asignaciones ORDER BY conjunto_asignaciones")->fetchAll(PDO::FETCH_COLUMN);
 $seleccionado = isset($_GET['conjunto']) ? (int)$_GET['conjunto'] : null;
 
@@ -200,6 +221,10 @@ $colorClasses = [
     <?php if ($seleccionado !== null): ?>
         <input type="hidden" id="conjuntoActual" value="<?= $seleccionado ?>">
 
+    <form method="post" class="mb-4">
+        <input type="hidden" name="conjunto_actual" value="<?= $seleccionado ?>">
+        <button type="submit" name="guardar" class="btn btn-secondary">Guardar asignación</button>
+    </form>
         <div class="grid grid-cols-2 gap-2">
             <div>
                 <?php foreach ($datos as $d): ?>
