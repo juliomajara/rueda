@@ -113,6 +113,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['tipo'] === 'modulo') {
 // OBTENER DATOS PARA LISTADOS
 $profesores = $pdo->query("SELECT * FROM profesores ORDER BY numero_de_orden ASC")->fetchAll(PDO::FETCH_ASSOC);
 $modulos = $pdo->query("SELECT * FROM modulos ORDER BY ciclo ASC, curso ASC, nombre ASC")->fetchAll(PDO::FETCH_ASSOC);
+$profesoresCount = count($profesores);
+$modulosCount = count($modulos);
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -166,7 +168,7 @@ $modulos = $pdo->query("SELECT * FROM modulos ORDER BY ciclo ASC, curso ASC, nom
                     <?= isset($editType) && $editType === 'profesor' ? 'Actualizar' : 'Agregar' ?>
                 </button>
             </form>
-            <h3 class="text-base font-semibold mt-4 mb-2">Listado de Profesores</h3>
+            <h3 class="text-base font-semibold mt-4 mb-2">Listado de Profesores (<?= $profesoresCount ?>)</h3>
             <div class="overflow-x-auto">
                 <table class="table table-zebra table-xs text-xs">
                     <thead>
@@ -251,7 +253,7 @@ $modulos = $pdo->query("SELECT * FROM modulos ORDER BY ciclo ASC, curso ASC, nom
                     <?= isset($editType) && $editType === 'modulo' ? 'Actualizar' : 'Agregar' ?>
                 </button>
             </form>
-            <h3 class="text-base font-semibold mt-4 mb-2">Listado de Módulos</h3>
+            <h3 class="text-base font-semibold mt-4 mb-2">Listado de Módulos (<?= $modulosCount ?>)</h3>
             <div class="overflow-x-auto">
                 <table class="table table-zebra table-xs text-xs">
                     <thead>
