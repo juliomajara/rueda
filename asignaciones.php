@@ -210,7 +210,7 @@ $colorClasses = [
                                         $w = $m['horas'] * 30;
                                         $cursoCiclo = $m['ciclo'] . ($m['curso'] === '1º' ? '1' : '2');
                                         $bg = $colorClasses[$cls] ?? 'bg-gray-200';
-                                        $border = 'border-4 ';
+                                        $border = 'border-4 border-black ';
                                         if ($m['atribucion'] === 'SAI') {
                                             $border .= 'border-dotted';
                                         } elseif ($m['atribucion'] === 'Informática') {
@@ -237,7 +237,7 @@ $colorClasses = [
                                         $w = $m['horas'] * 30;
                                         $cursoCiclo = $m['ciclo'] . ($m['curso'] === '1º' ? '1' : '2');
                                         $bg = $colorClasses[$cls] ?? 'bg-gray-200';
-                                        $border = 'border-4 ';
+                                        $border = 'border-4 border-black ';
                                         if ($m['atribucion'] === 'SAI') {
                                             $border .= 'border-dotted';
                                         } elseif ($m['atribucion'] === 'Informática') {
@@ -267,7 +267,7 @@ $colorClasses = [
                         $w = $m['horas'] * 30;
                         $cursoCiclo = $m['ciclo'] . ($m['curso'] === '1º' ? '1' : '2');
                         $bg = $colorClasses[$cls] ?? 'bg-gray-200';
-                        $border = 'border-4 ';
+                        $border = 'border-4 border-black ';
                         if ($m['atribucion'] === 'SAI') {
                             $border .= 'border-dotted';
                         } elseif ($m['atribucion'] === 'Informática') {
