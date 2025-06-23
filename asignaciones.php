@@ -46,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crear'])) {
             "SELECT IFNULL(MAX(conjunto_asignaciones), 0) + 1 FROM asignaciones"
         )->fetchColumn();
 
-        $profesores = $pdo->query("SELECT id_profesor FROM profesores ORDER BY id_profesor")->fetchAll(PDO::FETCH_ASSOC);
+        $profesores = $pdo->query("SELECT id_profesor FROM profesores ORDER BY numero_de_orden")->fetchAll(PDO::FETCH_ASSOC);
         $modulos = $pdo->query("SELECT id_modulo, horas FROM modulos ORDER BY horas DESC")->fetchAll(PDO::FETCH_ASSOC);
 
         // Inicializar horas asignadas
@@ -100,7 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crear'])) {
 $conjuntos = $pdo->query("SELECT DISTINCT conjunto_asignaciones FROM asignaciones ORDER BY conjunto_asignaciones")->fetchAll(PDO::FETCH_COLUMN);
 $seleccionado = isset($_GET['conjunto']) ? (int)$_GET['conjunto'] : null;
 
-$profesores = $pdo->query("SELECT * FROM profesores ORDER BY nombre")->fetchAll(PDO::FETCH_ASSOC);
+$profesores = $pdo->query("SELECT * FROM profesores ORDER BY numero_de_orden")->fetchAll(PDO::FETCH_ASSOC);
 $datos = [];
 $asignados = [];
 if ($seleccionado !== null) {
