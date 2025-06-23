@@ -17,9 +17,7 @@ $ciclos = [];
 $stmt = $pdo->query("SHOW COLUMNS FROM modulos LIKE 'ciclo'");
 $col = $stmt->fetch(PDO::FETCH_ASSOC);
 if ($col && isset($col['Type']) && preg_match("/^enum\((.*)\)$/", $col['Type'], $m)) {
-    $ciclos = array_map(function ($v) {
-        return trim($v, "' ");
-    }, explode(',', $m[1]));
+    $ciclos = array_map(fn($v) => trim($v, "' "), explode(',', $m[1]));
 }
 
 // Posibles valores para especialidad de profesores
@@ -27,9 +25,7 @@ $especialidades = [];
 $stmt = $pdo->query("SHOW COLUMNS FROM profesores LIKE 'especialidad'");
 $col = $stmt->fetch(PDO::FETCH_ASSOC);
 if ($col && isset($col['Type']) && preg_match("/^enum\((.*)\)$/", $col['Type'], $m)) {
-    $especialidades = array_map(function ($v) {
-        return trim($v, "' ");
-    }, explode(',', $m[1]));
+    $especialidades = array_map(fn($v) => trim($v, "' "), explode(',', $m[1]));
 }
 
 // Posibles valores para atribución de módulos
@@ -37,9 +33,7 @@ $atribuciones = [];
 $stmt = $pdo->query("SHOW COLUMNS FROM modulos LIKE 'atribucion'");
 $col = $stmt->fetch(PDO::FETCH_ASSOC);
 if ($col && isset($col['Type']) && preg_match("/^enum\((.*)\)$/", $col['Type'], $m)) {
-    $atribuciones = array_map(function ($v) {
-        return trim($v, "' ");
-    }, explode(',', $m[1]));
+    $atribuciones = array_map(fn($v) => trim($v, "' "), explode(',', $m[1]));
 }
 
 // ELIMINAR
@@ -116,138 +110,167 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['tipo'] === 'modulo') {
 
 // OBTENER DATOS PARA LISTADOS
 $profesores = $pdo->query("SELECT * FROM profesores ORDER BY nombre ASC")->fetchAll(PDO::FETCH_ASSOC);
-$modulos = $pdo->query("SELECT * FROM modulos ORDER BY ciclo ASC, curso ASC, nombre ASC")
-    ->fetchAll(PDO::FETCH_ASSOC);
+$modulos = $pdo->query("SELECT * FROM modulos ORDER BY ciclo ASC, curso ASC, nombre ASC")->fetchAll(PDO::FETCH_ASSOC);
 ?>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <title>Gestión de Profesores y Módulos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@3.8.1/dist/full.css" rel="stylesheet" type="text/css" />
 </head>
-<body>
-    <h1>Gestión de Profesores y Módulos</h1>
-    <p>
-        <a href="asignaciones.php"><button>Ir a Asignaciones</button></a>
+<body class="p-4">
+<div class="max-w-screen-xl mx-auto">
+    <h1 class="text-3xl font-bold mb-4">Gestión de Profesores y Módulos</h1>
+    <p class="mb-6">
+        <a href="asignaciones.php" class="btn btn-primary">Ir a Asignaciones</a>
     </p>
-
-    <div style="display: flex; gap: 40px;">
+    <div class="grid md:grid-cols-2 gap-8">
         <!-- Formulario Profesor -->
         <div>
-            <h2><?= isset($editType) && $editType === 'profesor' ? 'Editar Profesor' : 'Nuevo Profesor' ?></h2>
-            <form method="POST">
+            <h2 class="text-xl font-semibold mb-2">
+                <?= isset($editType) && $editType === 'profesor' ? 'Editar Profesor' : 'Nuevo Profesor' ?>
+            </h2>
+            <form method="POST" class="space-y-4">
                 <input type="hidden" name="tipo" value="profesor">
                 <?php if (isset($editType) && $editType === 'profesor'): ?>
                     <input type="hidden" name="id" value="<?= $editData['id_profesor'] ?>">
                 <?php endif; ?>
-
-
-                <label>Nombre:</label><br>
-                <input type="text" name="nombre" value="<?= $editData['nombre'] ?? '' ?>" required><br><br>
-
-                <label>Horas totales:</label><br>
-                <input type="number" name="horas" min="0" value="<?= $editData['horas'] ?? '' ?>" required><br><br>
-
-                <label>Especialidad:</label><br>
-                <select name="especialidad" required>
-                    <option value="">Seleccione</option>
-                    <?php foreach ($especialidades as $e): ?>
-                        <option value="<?= $e ?>" <?= isset($editData) && $editData['especialidad'] === $e ? 'selected' : '' ?>><?= $e ?></option>
-                    <?php endforeach; ?>
-                </select><br><br>
-
-                <button type="submit"><?= isset($editType) && $editType === 'profesor' ? 'Actualizar' : 'Agregar' ?></button>
+                <label class="form-control">
+                    <span class="label-text">Nombre:</span>
+                    <input class="input input-bordered" type="text" name="nombre" value="<?= $editData['nombre'] ?? '' ?>" required>
+                </label>
+                <label class="form-control">
+                    <span class="label-text">Horas totales:</span>
+                    <input class="input input-bordered" type="number" name="horas" min="0" value="<?= $editData['horas'] ?? '' ?>" required>
+                </label>
+                <label class="form-control">
+                    <span class="label-text">Especialidad:</span>
+                    <select class="select select-bordered" name="especialidad" required>
+                        <option value="">Seleccione</option>
+                        <?php foreach ($especialidades as $e): ?>
+                            <option value="<?= $e ?>" <?= isset($editData) && $editData['especialidad'] === $e ? 'selected' : '' ?>><?= $e ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </label>
+                <button type="submit" class="btn btn-primary">
+                    <?= isset($editType) && $editType === 'profesor' ? 'Actualizar' : 'Agregar' ?>
+                </button>
             </form>
-
-            <h3>Listado de Profesores</h3>
-            <table border="1" cellpadding="5">
-                <thead>
-                    <tr><th>Nombre</th><th>Horas</th><th>Especialidad</th><th>Acciones</th></tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($profesores as $p): ?>
+            <h3 class="text-lg font-semibold mt-6 mb-2">Listado de Profesores</h3>
+            <div class="overflow-x-auto">
+                <table class="table table-zebra">
+                    <thead>
                         <tr>
-                            <td><?= htmlspecialchars($p['nombre']) ?></td>
-                            <td><?= $p['horas'] ?></td>
-                            <td><?= $p['especialidad'] ?></td>
-                            <td>
-                                <a href="?editar=<?= $p['id_profesor'] ?>&tipo=profesor">Editar</a> |
-                                <a href="?eliminar=<?= $p['id_profesor'] ?>&tipo=profesor" onclick="return confirm('¿Seguro que quieres eliminar este profesor?')">Eliminar</a>
-                            </td>
+                            <th>Nombre</th>
+                            <th>Horas</th>
+                            <th>Especialidad</th>
+                            <th>Acciones</th>
                         </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($profesores as $p): ?>
+                            <tr>
+                                <td><?= htmlspecialchars($p['nombre']) ?></td>
+                                <td><?= $p['horas'] ?></td>
+                                <td><?= $p['especialidad'] ?></td>
+                                <td class="space-x-2">
+                                    <a href="?editar=<?= $p['id_profesor'] ?>&tipo=profesor" class="link link-primary">Editar</a>
+                                    <a href="?eliminar=<?= $p['id_profesor'] ?>&tipo=profesor" class="link link-secondary" onclick="return confirm('¿Seguro que quieres eliminar este profesor?')">Eliminar</a>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
         </div>
-
         <!-- Formulario Módulo -->
         <div>
-            <h2><?= isset($editType) && $editType === 'modulo' ? 'Editar Módulo' : 'Nuevo Módulo' ?></h2>
-            <form method="POST">
+            <h2 class="text-xl font-semibold mb-2">
+                <?= isset($editType) && $editType === 'modulo' ? 'Editar Módulo' : 'Nuevo Módulo' ?>
+            </h2>
+            <form method="POST" class="space-y-4">
                 <input type="hidden" name="tipo" value="modulo">
                 <?php if (isset($editType) && $editType === 'modulo'): ?>
                     <input type="hidden" name="id" value="<?= $editData['id_modulo'] ?>">
                 <?php endif; ?>
-
-                <label>Nombre:</label><br>
-                <input type="text" name="nombre" value="<?= $editData['nombre'] ?? '' ?>" required><br><br>
-
-                <label>Abreviatura:</label><br>
-                <input type="text" name="abreviatura" value="<?= $editData['abreviatura'] ?? '' ?>" required><br><br>
-
-                <label>Horas:</label><br>
-                <input type="number" name="horas" min="1" value="<?= $editData['horas'] ?? '' ?>" required><br><br>
-
-                <label>Curso:</label><br>
-                <select name="curso" required>
-                    <option value="">Seleccione</option>
-                    <option value="1º" <?= isset($editData) && $editData['curso'] === '1º' ? 'selected' : '' ?>>1º</option>
-                    <option value="2º" <?= isset($editData) && $editData['curso'] === '2º' ? 'selected' : '' ?>>2º</option>
-                </select><br><br>
-
-                <label>Ciclo:</label><br>
-                <select name="ciclo" required>
-                    <option value="">Seleccione</option>
-                    <?php foreach ($ciclos as $c): ?>
-                        <option value="<?= $c ?>" <?= isset($editData) && $editData['ciclo'] === $c ? 'selected' : '' ?>><?= $c ?></option>
-                    <?php endforeach; ?>
-                </select><br><br>
-
-                <label>Atribución:</label><br>
-                <select name="atribucion" required>
-                    <option value="">Seleccione</option>
-                    <?php foreach ($atribuciones as $a): ?>
-                        <option value="<?= $a ?>" <?= isset($editData) && $editData['atribucion'] === $a ? 'selected' : '' ?>><?= $a ?></option>
-                    <?php endforeach; ?>
-                </select><br><br>
-
-                <button type="submit"><?= isset($editType) && $editType === 'modulo' ? 'Actualizar' : 'Agregar' ?></button>
+                <label class="form-control">
+                    <span class="label-text">Nombre:</span>
+                    <input class="input input-bordered" type="text" name="nombre" value="<?= $editData['nombre'] ?? '' ?>" required>
+                </label>
+                <label class="form-control">
+                    <span class="label-text">Abreviatura:</span>
+                    <input class="input input-bordered" type="text" name="abreviatura" value="<?= $editData['abreviatura'] ?? '' ?>" required>
+                </label>
+                <label class="form-control">
+                    <span class="label-text">Horas:</span>
+                    <input class="input input-bordered" type="number" name="horas" min="1" value="<?= $editData['horas'] ?? '' ?>" required>
+                </label>
+                <label class="form-control">
+                    <span class="label-text">Curso:</span>
+                    <select class="select select-bordered" name="curso" required>
+                        <option value="">Seleccione</option>
+                        <option value="1º" <?= isset($editData) && $editData['curso'] === '1º' ? 'selected' : '' ?>>1º</option>
+                        <option value="2º" <?= isset($editData) && $editData['curso'] === '2º' ? 'selected' : '' ?>>2º</option>
+                    </select>
+                </label>
+                <label class="form-control">
+                    <span class="label-text">Ciclo:</span>
+                    <select class="select select-bordered" name="ciclo" required>
+                        <option value="">Seleccione</option>
+                        <?php foreach ($ciclos as $c): ?>
+                            <option value="<?= $c ?>" <?= isset($editData) && $editData['ciclo'] === $c ? 'selected' : '' ?>><?= $c ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </label>
+                <label class="form-control">
+                    <span class="label-text">Atribución:</span>
+                    <select class="select select-bordered" name="atribucion" required>
+                        <option value="">Seleccione</option>
+                        <?php foreach ($atribuciones as $a): ?>
+                            <option value="<?= $a ?>" <?= isset($editData) && $editData['atribucion'] === $a ? 'selected' : '' ?>><?= $a ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </label>
+                <button type="submit" class="btn btn-primary">
+                    <?= isset($editType) && $editType === 'modulo' ? 'Actualizar' : 'Agregar' ?>
+                </button>
             </form>
-
-            <h3>Listado de Módulos</h3>
-            <table border="1" cellpadding="5">
-                <thead>
-                    <tr><th>Nombre</th><th>Abreviatura</th><th>Horas</th><th>Curso</th><th>Ciclo</th><th>Atribución</th><th>Acciones</th></tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($modulos as $m): ?>
+            <h3 class="text-lg font-semibold mt-6 mb-2">Listado de Módulos</h3>
+            <div class="overflow-x-auto">
+                <table class="table table-zebra">
+                    <thead>
                         <tr>
-                            <td><?= htmlspecialchars($m['nombre']) ?></td>
-                            <td><?= htmlspecialchars($m['abreviatura']) ?></td>
-                            <td><?= $m['horas'] ?></td>
-                            <td><?= $m['curso'] ?></td>
-                            <td><?= $m['ciclo'] ?></td>
-                            <td><?= $m['atribucion'] ?></td>
-                            <td>
-                                <a href="?editar=<?= $m['id_modulo'] ?>&tipo=modulo">Editar</a> |
-                                <a href="?eliminar=<?= $m['id_modulo'] ?>&tipo=modulo" onclick="return confirm('¿Seguro que quieres eliminar este módulo?')">Eliminar</a>
-                            </td>
+                            <th>Nombre</th>
+                            <th>Abreviatura</th>
+                            <th>Horas</th>
+                            <th>Curso</th>
+                            <th>Ciclo</th>
+                            <th>Atribución</th>
+                            <th>Acciones</th>
                         </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($modulos as $m): ?>
+                            <tr>
+                                <td><?= htmlspecialchars($m['nombre']) ?></td>
+                                <td><?= htmlspecialchars($m['abreviatura']) ?></td>
+                                <td><?= $m['horas'] ?></td>
+                                <td><?= $m['curso'] ?></td>
+                                <td><?= $m['ciclo'] ?></td>
+                                <td><?= $m['atribucion'] ?></td>
+                                <td class="space-x-2">
+                                    <a href="?editar=<?= $m['id_modulo'] ?>&tipo=modulo" class="link link-primary">Editar</a>
+                                    <a href="?eliminar=<?= $m['id_modulo'] ?>&tipo=modulo" class="link link-secondary" onclick="return confirm('¿Seguro que quieres eliminar este módulo?')">Eliminar</a>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
+</div>
 </body>
 </html>
