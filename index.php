@@ -123,7 +123,7 @@ $modulos = $pdo->query("SELECT * FROM modulos ORDER BY ciclo ASC, curso ASC, nom
     <link href="https://cdn.jsdelivr.net/npm/daisyui@3.8.1/dist/full.css" rel="stylesheet" type="text/css" />
 </head>
 <body class="p-2">
-<div class="max-w-screen-xl mx-auto text-sm">
+<div class="max-w-screen-xl mx-auto text-xs">
     <h1 class="text-2xl font-bold mb-2">Gestión de Profesores y Módulos</h1>
     <p class="mb-2">
         <a href="asignaciones.php" class="btn btn-primary btn-sm">Ir a Asignaciones</a>
@@ -168,7 +168,7 @@ $modulos = $pdo->query("SELECT * FROM modulos ORDER BY ciclo ASC, curso ASC, nom
             </form>
             <h3 class="text-base font-semibold mt-4 mb-2">Listado de Profesores</h3>
             <div class="overflow-x-auto">
-                <table class="table table-zebra text-sm">
+                <table class="table table-zebra table-xs text-xs">
                     <thead>
                         <tr>
                             <th>Nombre</th>
@@ -253,7 +253,7 @@ $modulos = $pdo->query("SELECT * FROM modulos ORDER BY ciclo ASC, curso ASC, nom
             </form>
             <h3 class="text-base font-semibold mt-4 mb-2">Listado de Módulos</h3>
             <div class="overflow-x-auto">
-                <table class="table table-zebra text-sm">
+                <table class="table table-zebra table-xs text-xs">
                     <thead>
                         <tr>
                             <th>Nombre</th>
