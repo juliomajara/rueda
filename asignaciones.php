@@ -210,7 +210,7 @@ $colorClasses = [
                                 $border .= 'border-double';
                             }
                         ?>
-                            <div class="modulo <?= $bg ?> px-1 py-0.5 <?= $border ?> rounded cursor-grab text-xs" style="width: <?= $w ?>px" draggable="true" data-id="<?= $m['id_modulo'] ?>" data-horas="<?= $m['horas'] ?>" title="<?= htmlspecialchars($m['nombre']) ?> - <?= $cursoCiclo ?>">
+                            <div class="modulo <?= $bg ?> px-1 py-0.5 <?= $border ?> rounded cursor-grab text-xs" style="width: <?= $w ?>px" draggable="true" data-id="<?= $m['id_modulo'] ?>" data-horas="<?= $m['horas'] ?>" data-ciclo="<?= $m['ciclo'] ?>" title="<?= htmlspecialchars($m['nombre']) ?> - <?= $cursoCiclo ?>">
                                 <?= htmlspecialchars($m['abreviatura']) ?> (<?= $m['horas'] ?>h)
                             </div>
                         <?php endforeach; ?>
@@ -223,37 +223,34 @@ $colorClasses = [
                     $ciclos = ['SMRA','SMRB','ASIR','DAM','DAW'];
                     $grupos = [];
                     foreach ($disponibles as $m) {
-                        $key = $m['ciclo'] . ($m['curso'] === '1º' ? '1' : '2');
-                        $grupos[$key][] = $m;
+                        $grupos[$m['ciclo']][] = $m;
                     }
                 ?>
                 <div class="space-y-2">
                     <?php foreach ($ciclos as $c): ?>
-                        <?php foreach (['1','2'] as $curso): $ley = $c . $curso; ?>
-                            <div class="dropzone p-2 border border-dashed rounded-box bg-base-200 flex flex-wrap gap-1 mb-2 min-h-20" data-profesor-id="0">
-                                <span class="w-full text-center font-bold mb-1"><?= $ley ?></span>
-                                <?php if (!empty($grupos[$ley])): ?>
-                                    <?php foreach ($grupos[$ley] as $m):
-                                        $cls = strtolower($m['ciclo']) . ($m['curso'] === '1º' ? '1' : '2');
-                                        $w = $m['horas'] * 25;
-                                        $cursoCiclo = $m['ciclo'] . ($m['curso'] === '1º' ? '1' : '2');
-                                        $bg = $colorClasses[$cls] ?? 'bg-gray-200';
-                                        $border = 'border-4 border-black ';
-                                        if ($m['atribucion'] === 'SAI') {
-                                            $border .= 'border-dotted';
-                                        } elseif ($m['atribucion'] === 'Informática') {
-                                            $border .= 'border-solid';
-                                        } else {
-                                            $border .= 'border-double';
-                                        }
-                                    ?>
-                                        <div class="modulo <?= $bg ?> px-1 py-0.5 <?= $border ?> rounded cursor-grab text-xs" style="width: <?= $w ?>px" draggable="true" data-id="<?= $m['id_modulo'] ?>" data-horas="<?= $m['horas'] ?>" title="<?= htmlspecialchars($m['nombre']) ?> - <?= $cursoCiclo ?>">
-                                            <?= htmlspecialchars($m['abreviatura']) ?> (<?= $m['horas'] ?>h)
-                                        </div>
-                                    <?php endforeach; ?>
-                                <?php endif; ?>
-                            </div>
-                        <?php endforeach; ?>
+                        <div class="dropzone p-2 border border-dashed rounded-box bg-base-200 flex flex-wrap gap-1 mb-2 min-h-20" data-profesor-id="0" data-ciclo="<?= $c ?>">
+                            <span class="w-full text-center font-bold mb-1"><?= $c ?></span>
+                            <?php if (!empty($grupos[$c])): ?>
+                                <?php foreach ($grupos[$c] as $m):
+                                    $cls = strtolower($m['ciclo']) . ($m['curso'] === '1º' ? '1' : '2');
+                                    $w = $m['horas'] * 25;
+                                    $cursoCiclo = $m['ciclo'] . ($m['curso'] === '1º' ? '1' : '2');
+                                    $bg = $colorClasses[$cls] ?? 'bg-gray-200';
+                                    $border = 'border-4 border-black ';
+                                    if ($m['atribucion'] === 'SAI') {
+                                        $border .= 'border-dotted';
+                                    } elseif ($m['atribucion'] === 'Informática') {
+                                        $border .= 'border-solid';
+                                    } else {
+                                        $border .= 'border-double';
+                                    }
+                                ?>
+                                    <div class="modulo <?= $bg ?> px-1 py-0.5 <?= $border ?> rounded cursor-grab text-xs" style="width: <?= $w ?>px" draggable="true" data-id="<?= $m['id_modulo'] ?>" data-horas="<?= $m['horas'] ?>" data-ciclo="<?= $m['ciclo'] ?>" title="<?= htmlspecialchars($m['nombre']) ?> - <?= $cursoCiclo ?>">
+                                        <?= htmlspecialchars($m['abreviatura']) ?> (<?= $m['horas'] ?>h)
+                                    </div>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </div>
                     <?php endforeach; ?>
                 </div>
             </div>
@@ -295,6 +292,25 @@ $colorClasses = [
         document.querySelectorAll('.modulo').forEach(m => {
             m.addEventListener('dragstart', e => {
                 e.dataTransfer.setData('text/plain', m.dataset.id);
+            });
+            m.addEventListener('contextmenu', e => {
+                e.preventDefault();
+                const parent = m.closest('.dropzone');
+                if (!parent || parent.dataset.profesorId === '0') return;
+                const conjunto = document.getElementById('conjuntoActual').value;
+                fetch('asignaciones.php', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                    body: new URLSearchParams({
+                        accion: 'liberar',
+                        modulo_id: m.dataset.id,
+                        conjunto: conjunto
+                    })
+                }).then(() => {
+                    const target = document.querySelector(`.dropzone[data-profesor-id="0"][data-ciclo="${m.dataset.ciclo}"]`);
+                    if (target) target.appendChild(m);
+                    updateTotals();
+                });
             });
         });
 
