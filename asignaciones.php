@@ -187,10 +187,10 @@ $colorClasses = [
     <?php if ($seleccionado !== null): ?>
         <input type="hidden" id="conjuntoActual" value="<?= $seleccionado ?>">
 
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-2 gap-2">
             <div>
                 <?php foreach ($datos as $d): ?>
-                    <div class="dropzone p-4 border-2 border-dashed rounded-box bg-base-200 mb-4 flex flex-wrap gap-2 min-h-24" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>" data-horas-meta="<?= $d['profesor']['horas'] ?>">
+                    <div class="dropzone p-2 border border-dashed rounded-box bg-base-200 mb-2 flex flex-wrap gap-1 min-h-20" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>" data-horas-meta="<?= $d['profesor']['horas'] ?>">
                         <span class="w-full text-center font-bold mb-2">
                             <?= htmlspecialchars($d['profesor']['nombre']) ?> (
                             <span class="total" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>"><?= $d['total'] ?></span>/
@@ -198,7 +198,7 @@ $colorClasses = [
                         </span>
                         <?php foreach ($d['modulos'] as $m):
                             $cls = strtolower($m['ciclo']) . ($m['curso'] === '1º' ? '1' : '2');
-                            $w = $m['horas'] * 30;
+                            $w = $m['horas'] * 25;
                             $cursoCiclo = $m['ciclo'] . ($m['curso'] === '1º' ? '1' : '2');
                             $bg = $colorClasses[$cls] ?? 'bg-gray-200';
                             $border = 'border-4 border-black ';
@@ -210,33 +210,32 @@ $colorClasses = [
                                 $border .= 'border-double';
                             }
                         ?>
-                            <div class="modulo <?= $bg ?> px-2 py-1 <?= $border ?> rounded cursor-grab text-sm" style="width: <?= $w ?>px" draggable="true" data-id="<?= $m['id_modulo'] ?>" data-horas="<?= $m['horas'] ?>" title="<?= htmlspecialchars($m['nombre']) ?> - <?= $cursoCiclo ?>">
+                            <div class="modulo <?= $bg ?> px-1 py-0.5 <?= $border ?> rounded cursor-grab text-xs" style="width: <?= $w ?>px" draggable="true" data-id="<?= $m['id_modulo'] ?>" data-horas="<?= $m['horas'] ?>" title="<?= htmlspecialchars($m['nombre']) ?> - <?= $cursoCiclo ?>">
                                 <?= htmlspecialchars($m['abreviatura']) ?> (<?= $m['horas'] ?>h)
                             </div>
                         <?php endforeach; ?>
                     </div>
                 <?php endforeach; ?>
             </div>
-            <div class="space-y-4 sticky top-0">
+            <div class="space-y-2 sticky top-0">
                 <h2 class="text-xl font-semibold mb-2">Módulos sin asignar: <span id="totalSinAsignar"><?= $totalDisponibles ?></span>h</h2>
                 <?php
-                    $leyendas1 = ['SMRA1','SMRB1','ASIR1','DAM1','DAW1'];
-                    $leyendas2 = ['SMRA2','SMRB2','ASIR2','DAM2','DAW2'];
+                    $ciclos = ['SMRA','SMRB','ASIR','DAM','DAW'];
                     $grupos = [];
                     foreach ($disponibles as $m) {
                         $key = $m['ciclo'] . ($m['curso'] === '1º' ? '1' : '2');
                         $grupos[$key][] = $m;
                     }
                 ?>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <?php foreach ($leyendas1 as $ley): ?>
-                            <div class="dropzone p-4 border-2 border-dashed rounded-box bg-base-200 mb-4 flex flex-wrap gap-2 min-h-24" data-profesor-id="0">
-                                <span class="w-full text-center font-bold mb-2"><?= $ley ?></span>
+                <div class="space-y-2">
+                    <?php foreach ($ciclos as $c): ?>
+                        <?php foreach (['1','2'] as $curso): $ley = $c . $curso; ?>
+                            <div class="dropzone p-2 border border-dashed rounded-box bg-base-200 flex flex-wrap gap-1 mb-2 min-h-20" data-profesor-id="0">
+                                <span class="w-full text-center font-bold mb-1"><?= $ley ?></span>
                                 <?php if (!empty($grupos[$ley])): ?>
                                     <?php foreach ($grupos[$ley] as $m):
                                         $cls = strtolower($m['ciclo']) . ($m['curso'] === '1º' ? '1' : '2');
-                                        $w = $m['horas'] * 30;
+                                        $w = $m['horas'] * 25;
                                         $cursoCiclo = $m['ciclo'] . ($m['curso'] === '1º' ? '1' : '2');
                                         $bg = $colorClasses[$cls] ?? 'bg-gray-200';
                                         $border = 'border-4 border-black ';
@@ -248,41 +247,14 @@ $colorClasses = [
                                             $border .= 'border-double';
                                         }
                                     ?>
-                                        <div class="modulo <?= $bg ?> px-2 py-1 <?= $border ?> rounded cursor-grab text-sm" style="width: <?= $w ?>px" draggable="true" data-id="<?= $m['id_modulo'] ?>" data-horas="<?= $m['horas'] ?>" title="<?= htmlspecialchars($m['nombre']) ?> - <?= $cursoCiclo ?>">
+                                        <div class="modulo <?= $bg ?> px-1 py-0.5 <?= $border ?> rounded cursor-grab text-xs" style="width: <?= $w ?>px" draggable="true" data-id="<?= $m['id_modulo'] ?>" data-horas="<?= $m['horas'] ?>" title="<?= htmlspecialchars($m['nombre']) ?> - <?= $cursoCiclo ?>">
                                             <?= htmlspecialchars($m['abreviatura']) ?> (<?= $m['horas'] ?>h)
                                         </div>
                                     <?php endforeach; ?>
                                 <?php endif; ?>
                             </div>
                         <?php endforeach; ?>
-                    </div>
-                    <div>
-                        <?php foreach ($leyendas2 as $ley): ?>
-                            <div class="dropzone p-4 border-2 border-dashed rounded-box bg-base-200 mb-4 flex flex-wrap gap-2 min-h-24" data-profesor-id="0">
-                                <span class="w-full text-center font-bold mb-2"><?= $ley ?></span>
-                                <?php if (!empty($grupos[$ley])): ?>
-                                    <?php foreach ($grupos[$ley] as $m):
-                                        $cls = strtolower($m['ciclo']) . ($m['curso'] === '1º' ? '1' : '2');
-                                        $w = $m['horas'] * 30;
-                                        $cursoCiclo = $m['ciclo'] . ($m['curso'] === '1º' ? '1' : '2');
-                                        $bg = $colorClasses[$cls] ?? 'bg-gray-200';
-                                        $border = 'border-4 border-black ';
-                                        if ($m['atribucion'] === 'SAI') {
-                                            $border .= 'border-dotted';
-                                        } elseif ($m['atribucion'] === 'Informática') {
-                                            $border .= 'border-solid';
-                                        } else {
-                                            $border .= 'border-double';
-                                        }
-                                    ?>
-                                        <div class="modulo <?= $bg ?> px-2 py-1 <?= $border ?> rounded cursor-grab text-sm" style="width: <?= $w ?>px" draggable="true" data-id="<?= $m['id_modulo'] ?>" data-horas="<?= $m['horas'] ?>" title="<?= htmlspecialchars($m['nombre']) ?> - <?= $cursoCiclo ?>">
-                                            <?= htmlspecialchars($m['abreviatura']) ?> (<?= $m['horas'] ?>h)
-                                        </div>
-                                    <?php endforeach; ?>
-                                <?php endif; ?>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
+                    <?php endforeach; ?>
                 </div>
             </div>
         </div>
