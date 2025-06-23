@@ -37,6 +37,15 @@ if (
     exit;
 }
 
+// Eliminar un conjunto completo de asignaciones
+if (isset($_GET['eliminar_asignacion'])) {
+    $c = (int)$_GET['eliminar_asignacion'];
+    $stmt = $pdo->prepare('DELETE FROM asignaciones WHERE conjunto_asignaciones = ?');
+    $stmt->execute([$c]);
+    header('Location: asignaciones.php');
+    exit;
+}
+
 // Crear asignaciones al presionar el boton
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crear'])) {
     try {
@@ -46,7 +55,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crear'])) {
             "SELECT IFNULL(MAX(conjunto_asignaciones), 0) + 1 FROM asignaciones"
         )->fetchColumn();
 
-        $profesores = $pdo->query("SELECT id_profesor FROM profesores ORDER BY id_profesor")->fetchAll(PDO::FETCH_ASSOC);
+        // Mantener el orden definido por numero_de_orden
+        $profesores = $pdo->query("SELECT id_profesor FROM profesores ORDER BY numero_de_orden")->fetchAll(PDO::FETCH_ASSOC);
         $modulos = $pdo->query("SELECT id_modulo, horas FROM modulos ORDER BY horas DESC")->fetchAll(PDO::FETCH_ASSOC);
 
         // Inicializar horas asignadas
@@ -100,7 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crear'])) {
 $conjuntos = $pdo->query("SELECT DISTINCT conjunto_asignaciones FROM asignaciones ORDER BY conjunto_asignaciones")->fetchAll(PDO::FETCH_COLUMN);
 $seleccionado = isset($_GET['conjunto']) ? (int)$_GET['conjunto'] : null;
 
-$profesores = $pdo->query("SELECT * FROM profesores ORDER BY nombre")->fetchAll(PDO::FETCH_ASSOC);
+$profesores = $pdo->query("SELECT * FROM profesores ORDER BY numero_de_orden")->fetchAll(PDO::FETCH_ASSOC);
 $datos = [];
 $asignados = [];
 if ($seleccionado !== null) {
@@ -177,7 +187,10 @@ $colorClasses = [
         <h2 class="text-xl font-semibold mb-2">Conjuntos disponibles</h2>
         <ul class="list-disc list-inside mb-4">
             <?php foreach ($conjuntos as $c): ?>
-                <li><a class="link link-hover" href="?conjunto=<?= $c ?>">Asignación <?= $c ?></a></li>
+                <li>
+                    <a class="link link-hover" href="?conjunto=<?= $c ?>">Asignación <?= $c ?></a>
+                    <a class="text-red-600 ml-2" href="?eliminar_asignacion=<?= $c ?>" onclick="return confirm('¿Seguro que quieres eliminar esta asignación?')">Eliminar</a>
+                </li>
             <?php endforeach; ?>
         </ul>
     <?php else: ?>
@@ -194,7 +207,8 @@ $colorClasses = [
                         <span class="w-full text-center font-bold mb-2">
                             <?= htmlspecialchars($d['profesor']['nombre']) ?> (
                             <span class="total" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>"><?= $d['total'] ?></span>/
-                            <span class="faltan <?= $d['diferencia'] > 0 ? 'text-red-600' : '' ?>" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>"><?= ($d['diferencia'] >= 0 ? '-' : '+') . abs($d['diferencia']) ?></span>)
+                            <span class="faltan <?= $d['diferencia'] > 0 ? 'text-red-600' : '' ?>" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>"><?= ($d['diferencia'] >= 0 ? '-' : '+') . abs($d['diferencia']) ?></span>) -
+                            <?= $d['profesor']['especialidad'] ?>
                         </span>
                         <?php foreach ($d['modulos'] as $m):
                             $cls = strtolower($m['ciclo']) . ($m['curso'] === '1º' ? '1' : '2');
