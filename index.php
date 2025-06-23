@@ -51,18 +51,19 @@ if (isset($_GET['eliminar'], $_GET['tipo'])) {
 }
 
 // EDITAR (traer datos)
-$editData = null;
+$editProfesor = null;
+$editModulo = null;
 if (isset($_GET['editar'], $_GET['tipo'])) {
     $id = (int)$_GET['editar'];
     if ($_GET['tipo'] === 'profesor') {
         $stmt = $pdo->prepare("SELECT * FROM profesores WHERE id_profesor = ?");
         $stmt->execute([$id]);
-        $editData = $stmt->fetch(PDO::FETCH_ASSOC);
+        $editProfesor = $stmt->fetch(PDO::FETCH_ASSOC);
         $editType = 'profesor';
     } elseif ($_GET['tipo'] === 'modulo') {
         $stmt = $pdo->prepare("SELECT * FROM modulos WHERE id_modulo = ?");
         $stmt->execute([$id]);
-        $editData = $stmt->fetch(PDO::FETCH_ASSOC);
+        $editModulo = $stmt->fetch(PDO::FETCH_ASSOC);
         $editType = 'modulo';
     }
 }
@@ -126,31 +127,31 @@ $modulos = $pdo->query("SELECT * FROM modulos ORDER BY ciclo ASC, curso ASC, nom
     <p class="mb-2">
         <a href="asignaciones.php" class="btn btn-primary btn-sm">Ir a Asignaciones</a>
     </p>
-    <div class="grid md:grid-cols-2 gap-4">
+    <div class="grid md:grid-cols-5 gap-4">
         <!-- Formulario Profesor -->
-        <div>
+        <div class="md:col-span-2">
             <h2 class="text-lg font-semibold mb-2">
                 <?= isset($editType) && $editType === 'profesor' ? 'Editar Profesor' : 'Nuevo Profesor' ?>
             </h2>
             <form method="POST" class="space-y-2">
                 <input type="hidden" name="tipo" value="profesor">
                 <?php if (isset($editType) && $editType === 'profesor'): ?>
-                    <input type="hidden" name="id" value="<?= $editData['id_profesor'] ?>">
+                    <input type="hidden" name="id" value="<?= $editProfesor['id_profesor'] ?>">
                 <?php endif; ?>
                 <label class="form-control">
                     <span class="label-text">Nombre:</span>
-                    <input class="input input-bordered" type="text" name="nombre" value="<?= $editData['nombre'] ?? '' ?>" required>
+                    <input class="input input-bordered input-sm" type="text" name="nombre" value="<?= $editProfesor['nombre'] ?? '' ?>" required>
                 </label>
                 <label class="form-control">
                     <span class="label-text">Horas totales:</span>
-                    <input class="input input-bordered" type="number" name="horas" min="0" value="<?= $editData['horas'] ?? '' ?>" required>
+                    <input class="input input-bordered input-sm" type="number" name="horas" min="0" value="<?= $editProfesor['horas'] ?? '' ?>" required>
                 </label>
                 <label class="form-control">
                     <span class="label-text">Especialidad:</span>
-                    <select class="select select-bordered" name="especialidad" required>
+                    <select class="select select-bordered select-sm" name="especialidad" required>
                         <option value="">Seleccione</option>
                         <?php foreach ($especialidades as $e): ?>
-                            <option value="<?= $e ?>" <?= isset($editData) && $editData['especialidad'] === $e ? 'selected' : '' ?>><?= $e ?></option>
+                            <option value="<?= $e ?>" <?= isset($editProfesor) && $editProfesor['especialidad'] === $e ? 'selected' : '' ?>><?= $e ?></option>
                         <?php endforeach; ?>
                     </select>
                 </label>
@@ -186,50 +187,50 @@ $modulos = $pdo->query("SELECT * FROM modulos ORDER BY ciclo ASC, curso ASC, nom
             </div>
         </div>
         <!-- Formulario Módulo -->
-        <div>
+        <div class="md:col-span-3">
             <h2 class="text-lg font-semibold mb-2">
                 <?= isset($editType) && $editType === 'modulo' ? 'Editar Módulo' : 'Nuevo Módulo' ?>
             </h2>
             <form method="POST" class="space-y-2">
                 <input type="hidden" name="tipo" value="modulo">
                 <?php if (isset($editType) && $editType === 'modulo'): ?>
-                    <input type="hidden" name="id" value="<?= $editData['id_modulo'] ?>">
+                    <input type="hidden" name="id" value="<?= $editModulo['id_modulo'] ?>">
                 <?php endif; ?>
                 <label class="form-control">
                     <span class="label-text">Nombre:</span>
-                    <input class="input input-bordered" type="text" name="nombre" value="<?= $editData['nombre'] ?? '' ?>" required>
+                    <input class="input input-bordered input-sm" type="text" name="nombre" value="<?= $editModulo['nombre'] ?? '' ?>" required>
                 </label>
                 <label class="form-control">
                     <span class="label-text">Abreviatura:</span>
-                    <input class="input input-bordered" type="text" name="abreviatura" value="<?= $editData['abreviatura'] ?? '' ?>" required>
+                    <input class="input input-bordered input-sm" type="text" name="abreviatura" value="<?= $editModulo['abreviatura'] ?? '' ?>" required>
                 </label>
                 <label class="form-control">
                     <span class="label-text">Horas:</span>
-                    <input class="input input-bordered" type="number" name="horas" min="1" value="<?= $editData['horas'] ?? '' ?>" required>
+                    <input class="input input-bordered input-sm" type="number" name="horas" min="1" value="<?= $editModulo['horas'] ?? '' ?>" required>
                 </label>
                 <label class="form-control">
                     <span class="label-text">Curso:</span>
-                    <select class="select select-bordered" name="curso" required>
+                    <select class="select select-bordered select-sm" name="curso" required>
                         <option value="">Seleccione</option>
-                        <option value="1º" <?= isset($editData) && $editData['curso'] === '1º' ? 'selected' : '' ?>>1º</option>
-                        <option value="2º" <?= isset($editData) && $editData['curso'] === '2º' ? 'selected' : '' ?>>2º</option>
+                        <option value="1º" <?= isset($editModulo) && $editModulo['curso'] === '1º' ? 'selected' : '' ?>>1º</option>
+                        <option value="2º" <?= isset($editModulo) && $editModulo['curso'] === '2º' ? 'selected' : '' ?>>2º</option>
                     </select>
                 </label>
                 <label class="form-control">
                     <span class="label-text">Ciclo:</span>
-                    <select class="select select-bordered" name="ciclo" required>
+                    <select class="select select-bordered select-sm" name="ciclo" required>
                         <option value="">Seleccione</option>
                         <?php foreach ($ciclos as $c): ?>
-                            <option value="<?= $c ?>" <?= isset($editData) && $editData['ciclo'] === $c ? 'selected' : '' ?>><?= $c ?></option>
+                            <option value="<?= $c ?>" <?= isset($editModulo) && $editModulo['ciclo'] === $c ? 'selected' : '' ?>><?= $c ?></option>
                         <?php endforeach; ?>
                     </select>
                 </label>
                 <label class="form-control">
                     <span class="label-text">Atribución:</span>
-                    <select class="select select-bordered" name="atribucion" required>
+                    <select class="select select-bordered select-sm" name="atribucion" required>
                         <option value="">Seleccione</option>
                         <?php foreach ($atribuciones as $a): ?>
-                            <option value="<?= $a ?>" <?= isset($editData) && $editData['atribucion'] === $a ? 'selected' : '' ?>><?= $a ?></option>
+                            <option value="<?= $a ?>" <?= isset($editModulo) && $editModulo['atribucion'] === $a ? 'selected' : '' ?>><?= $a ?></option>
                         <?php endforeach; ?>
                     </select>
                 </label>
