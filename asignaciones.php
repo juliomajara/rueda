@@ -55,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crear'])) {
             "SELECT IFNULL(MAX(conjunto_asignaciones), 0) + 1 FROM asignaciones"
         )->fetchColumn();
 
-        // Mantener el orden definido por numero_de_orden
+
         $profesores = $pdo->query("SELECT id_profesor FROM profesores ORDER BY numero_de_orden")->fetchAll(PDO::FETCH_ASSOC);
         $modulos = $pdo->query("SELECT id_modulo, horas FROM modulos ORDER BY horas DESC")->fetchAll(PDO::FETCH_ASSOC);
 

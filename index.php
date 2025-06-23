@@ -73,14 +73,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['tipo'] === 'profesor') {
     $nombre = trim($_POST['nombre']);
     $horas = (int)$_POST['horas'];
     $especialidad = $_POST['especialidad'];
+    $numeroOrden = (int)$_POST['numero_de_orden'];
 
-    if ($nombre !== '' && $horas >= 0 && in_array($especialidad, $especialidades)) {
+    if ($nombre !== '' && $horas >= 0 && $numeroOrden > 0 && in_array($especialidad, $especialidades)) {
         if (isset($_POST['id'])) {
-            $stmt = $pdo->prepare("UPDATE profesores SET nombre = ?, horas = ?, especialidad = ? WHERE id_profesor = ?");
-            $stmt->execute([$nombre, $horas, $especialidad, $_POST['id']]);
+            $stmt = $pdo->prepare("UPDATE profesores SET nombre = ?, horas = ?, especialidad = ?, numero_de_orden = ? WHERE id_profesor = ?");
+            $stmt->execute([$nombre, $horas, $especialidad, $numeroOrden, $_POST['id']]);
         } else {
-            $stmt = $pdo->prepare("INSERT INTO profesores (nombre, horas, especialidad) VALUES (?, ?, ?)");
-            $stmt->execute([$nombre, $horas, $especialidad]);
+            $stmt = $pdo->prepare("INSERT INTO profesores (nombre, horas, especialidad, numero_de_orden) VALUES (?, ?, ?, ?)");
+            $stmt->execute([$nombre, $horas, $especialidad, $numeroOrden]);
         }
     }
     header("Location: index.php");
@@ -110,7 +111,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['tipo'] === 'modulo') {
 }
 
 // OBTENER DATOS PARA LISTADOS
-$profesores = $pdo->query("SELECT * FROM profesores ORDER BY nombre ASC")->fetchAll(PDO::FETCH_ASSOC);
+$profesores = $pdo->query("SELECT * FROM profesores ORDER BY numero_de_orden ASC")->fetchAll(PDO::FETCH_ASSOC);
 $modulos = $pdo->query("SELECT * FROM modulos ORDER BY ciclo ASC, curso ASC, nombre ASC")->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
@@ -147,6 +148,10 @@ $modulos = $pdo->query("SELECT * FROM modulos ORDER BY ciclo ASC, curso ASC, nom
                     <input class="input input-bordered input-sm" type="number" name="horas" min="0" value="<?= $editProfesor['horas'] ?? '' ?>" required>
                 </label>
                 <label class="form-control">
+                    <span class="label-text">Número de orden:</span>
+                    <input class="input input-bordered input-sm" type="number" name="numero_de_orden" min="1" value="<?= $editProfesor['numero_de_orden'] ?? '' ?>" required>
+                </label>
+                <label class="form-control">
                     <span class="label-text">Especialidad:</span>
                     <select class="select select-bordered select-sm" name="especialidad" required>
                         <option value="">Seleccione</option>
@@ -167,6 +172,7 @@ $modulos = $pdo->query("SELECT * FROM modulos ORDER BY ciclo ASC, curso ASC, nom
                             <th>Nombre</th>
                             <th>Horas</th>
                             <th>Especialidad</th>
+                            <th>Nº Orden</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -176,6 +182,7 @@ $modulos = $pdo->query("SELECT * FROM modulos ORDER BY ciclo ASC, curso ASC, nom
                                 <td><?= htmlspecialchars($p['nombre']) ?></td>
                                 <td><?= $p['horas'] ?></td>
                                 <td><?= $p['especialidad'] ?></td>
+                                <td><?= $p['numero_de_orden'] ?></td>
                                 <td class="space-x-2">
                                     <a href="?editar=<?= $p['id_profesor'] ?>&tipo=profesor" class="link link-primary">Editar</a>
                                     <a href="?eliminar=<?= $p['id_profesor'] ?>&tipo=profesor" class="link link-secondary" onclick="return confirm('¿Seguro que quieres eliminar este profesor?')">Eliminar</a>

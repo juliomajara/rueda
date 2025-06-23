@@ -8,7 +8,8 @@ CREATE TABLE profesores (
   id_profesor INT AUTO_INCREMENT PRIMARY KEY,
   nombre VARCHAR(100) NOT NULL,
   horas INT NOT NULL CHECK (horas >= 0),
-  especialidad ENUM('Informática', 'SAI') NOT NULL
+  especialidad ENUM('Informática', 'SAI') NOT NULL,
+  numero_de_orden INT UNSIGNED NOT NULL CHECK (numero_de_orden > 0)
 );
 
 CREATE TABLE modulos (
