@@ -112,12 +112,12 @@ if ($seleccionado !== null) {
             $asignados[] = $mo['id_modulo'];
         }
         $total = array_sum(array_column($mods, 'horas'));
-        $faltan = 20 - $total;
+        $diff = $p['horas'] - $total;
         $datos[] = [
-            'profesor' => $p,
-            'modulos' => $mods,
-            'total' => $total,
-            'faltan' => $faltan
+            'profesor'   => $p,
+            'modulos'    => $mods,
+            'total'      => $total,
+            'diferencia' => $diff
         ];
     }
 }
@@ -258,10 +258,12 @@ $colorClasses = [
             </div>
 
             <?php foreach ($datos as $d): ?>
-                <div class="dropzone p-4 border-2 border-dashed rounded-box bg-base-200 mb-4 flex flex-wrap gap-2 min-h-24" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>">
-                    <span class="w-full text-center font-bold mb-2"><?= htmlspecialchars($d['profesor']['nombre']) ?></span>
-                    <span class="w-full text-center text-sm mb-2">Horas asignadas: <span class="total" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>"><?= $d['total'] ?></span> |
-                    Faltan hasta 20: <span class="faltan <?= $d['faltan'] === 0 ? '' : 'text-red-600' ?>" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>"><?= $d['faltan'] ?></span></span>
+                <div class="dropzone p-4 border-2 border-dashed rounded-box bg-base-200 mb-4 flex flex-wrap gap-2 min-h-24" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>" data-horas-meta="<?= $d['profesor']['horas'] ?>">
+                    <span class="w-full text-center font-bold mb-2">
+                        <?= htmlspecialchars($d['profesor']['nombre']) ?> (
+                        <span class="total" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>"><?= $d['total'] ?></span>/
+                        <span class="faltan <?= $d['diferencia'] > 0 ? 'text-red-600' : '' ?>" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>"><?= ($d['diferencia'] >= 0 ? '-' : '+') . abs($d['diferencia']) ?></span>)
+                    </span>
                     <?php foreach ($d['modulos'] as $m):
                         $cls = strtolower($m['ciclo']) . ($m['curso'] === '1º' ? '1' : '2');
                         $w = $m['horas'] * 30;
@@ -304,10 +306,12 @@ $colorClasses = [
                     const faltanElem = document.querySelector(`.faltan[data-profesor-id="${profId}"]`);
                     if (totalElem) totalElem.textContent = total;
                     if (faltanElem) {
-                        const faltan = 20 - total;
-                        faltanElem.textContent = faltan;
-                        if (faltan === 0) faltanElem.classList.remove('text-red-600');
-                        else faltanElem.classList.add('text-red-600');
+                        const meta = parseInt(z.dataset.horasMeta, 10);
+                        const diff = meta - total;
+                        faltanElem.textContent = `${diff >= 0 ? '-' : '+'}${Math.abs(diff)}`;
+                        if (diff === 0) faltanElem.classList.remove('text-red-600');
+                        else if (diff > 0) faltanElem.classList.add('text-red-600');
+                        else faltanElem.classList.remove('text-red-600');
                     }
                 }
             });
