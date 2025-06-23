@@ -123,7 +123,7 @@ $modulos = $pdo->query("SELECT * FROM modulos ORDER BY ciclo ASC, curso ASC, nom
     <link href="https://cdn.jsdelivr.net/npm/daisyui@3.8.1/dist/full.css" rel="stylesheet" type="text/css" />
 </head>
 <body class="p-2">
-<div class="max-w-screen-xl mx-auto text-xs">
+<div class="w-full text-xs">
     <h1 class="text-2xl font-bold mb-2">Gestión de Profesores y Módulos</h1>
     <p class="mb-2">
         <a href="asignaciones.php" class="btn btn-primary btn-sm">Ir a Asignaciones</a>
@@ -143,7 +143,7 @@ $modulos = $pdo->query("SELECT * FROM modulos ORDER BY ciclo ASC, curso ASC, nom
                     <span class="label-text">Nombre:</span>
                     <input class="input input-bordered input-sm" type="text" name="nombre" value="<?= $editProfesor['nombre'] ?? '' ?>" required>
                 </label>
-                <div class="flex flex-wrap gap-2">
+                <div class="flex gap-2">
                     <label class="form-control flex-1">
                         <span class="label-text">Horas totales:</span>
                         <input class="input input-bordered input-sm" type="number" name="horas" min="0" value="<?= $editProfesor['horas'] ?? '' ?>" required>
