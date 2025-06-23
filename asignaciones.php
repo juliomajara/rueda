@@ -188,7 +188,36 @@ $colorClasses = [
         <input type="hidden" id="conjuntoActual" value="<?= $seleccionado ?>">
 
         <div class="grid grid-cols-2 gap-4">
-            <div class="col-span-2">
+            <div>
+                <?php foreach ($datos as $d): ?>
+                    <div class="dropzone p-4 border-2 border-dashed rounded-box bg-base-200 mb-4 flex flex-wrap gap-2 min-h-24" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>" data-horas-meta="<?= $d['profesor']['horas'] ?>">
+                        <span class="w-full text-center font-bold mb-2">
+                            <?= htmlspecialchars($d['profesor']['nombre']) ?> (
+                            <span class="total" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>"><?= $d['total'] ?></span>/
+                            <span class="faltan <?= $d['diferencia'] > 0 ? 'text-red-600' : '' ?>" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>"><?= ($d['diferencia'] >= 0 ? '-' : '+') . abs($d['diferencia']) ?></span>)
+                        </span>
+                        <?php foreach ($d['modulos'] as $m):
+                            $cls = strtolower($m['ciclo']) . ($m['curso'] === '1º' ? '1' : '2');
+                            $w = $m['horas'] * 30;
+                            $cursoCiclo = $m['ciclo'] . ($m['curso'] === '1º' ? '1' : '2');
+                            $bg = $colorClasses[$cls] ?? 'bg-gray-200';
+                            $border = 'border-4 border-black ';
+                            if ($m['atribucion'] === 'SAI') {
+                                $border .= 'border-dotted';
+                            } elseif ($m['atribucion'] === 'Informática') {
+                                $border .= 'border-solid';
+                            } else {
+                                $border .= 'border-double';
+                            }
+                        ?>
+                            <div class="modulo <?= $bg ?> px-2 py-1 <?= $border ?> rounded cursor-grab text-sm" style="width: <?= $w ?>px" draggable="true" data-id="<?= $m['id_modulo'] ?>" data-horas="<?= $m['horas'] ?>" title="<?= htmlspecialchars($m['nombre']) ?> - <?= $cursoCiclo ?>">
+                                <?= htmlspecialchars($m['abreviatura']) ?> (<?= $m['horas'] ?>h)
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+            <div class="space-y-4 sticky top-0">
                 <h2 class="text-xl font-semibold mb-2">Módulos sin asignar: <span id="totalSinAsignar"><?= $totalDisponibles ?></span>h</h2>
                 <?php
                     $leyendas1 = ['SMRA1','SMRB1','ASIR1','DAM1','DAW1'];
@@ -256,34 +285,6 @@ $colorClasses = [
                     </div>
                 </div>
             </div>
-
-            <?php foreach ($datos as $d): ?>
-                <div class="dropzone p-4 border-2 border-dashed rounded-box bg-base-200 mb-4 flex flex-wrap gap-2 min-h-24" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>" data-horas-meta="<?= $d['profesor']['horas'] ?>">
-                    <span class="w-full text-center font-bold mb-2">
-                        <?= htmlspecialchars($d['profesor']['nombre']) ?> (
-                        <span class="total" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>"><?= $d['total'] ?></span>/
-                        <span class="faltan <?= $d['diferencia'] > 0 ? 'text-red-600' : '' ?>" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>"><?= ($d['diferencia'] >= 0 ? '-' : '+') . abs($d['diferencia']) ?></span>)
-                    </span>
-                    <?php foreach ($d['modulos'] as $m):
-                        $cls = strtolower($m['ciclo']) . ($m['curso'] === '1º' ? '1' : '2');
-                        $w = $m['horas'] * 30;
-                        $cursoCiclo = $m['ciclo'] . ($m['curso'] === '1º' ? '1' : '2');
-                        $bg = $colorClasses[$cls] ?? 'bg-gray-200';
-                        $border = 'border-4 border-black ';
-                        if ($m['atribucion'] === 'SAI') {
-                            $border .= 'border-dotted';
-                        } elseif ($m['atribucion'] === 'Informática') {
-                            $border .= 'border-solid';
-                        } else {
-                            $border .= 'border-double';
-                        }
-                    ?>
-                        <div class="modulo <?= $bg ?> px-2 py-1 <?= $border ?> rounded cursor-grab text-sm" style="width: <?= $w ?>px" draggable="true" data-id="<?= $m['id_modulo'] ?>" data-horas="<?= $m['horas'] ?>" title="<?= htmlspecialchars($m['nombre']) ?> - <?= $cursoCiclo ?>">
-                            <?= htmlspecialchars($m['abreviatura']) ?> (<?= $m['horas'] ?>h)
-                        </div>
-                    <?php endforeach; ?>
-                </div>
-            <?php endforeach; ?>
         </div>
     <?php endif; ?>
 
