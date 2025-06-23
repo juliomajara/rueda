@@ -256,7 +256,7 @@ $colorClasses = [
                     </div>
                 <?php endforeach; ?>
             </div>
-            <div class="space-y-2 sticky top-0">
+            <div class="space-y-2 sticky top-0 max-h-screen overflow-y-auto">
                 <h2 class="text-xl font-semibold mb-2">Módulos sin asignar: <span id="totalSinAsignar"><?= $totalDisponibles ?></span>h</h2>
                 <?php
                     $ciclos = ['SMRA','SMRB','ASIR','DAM','DAW'];
