@@ -120,19 +120,19 @@ $modulos = $pdo->query("SELECT * FROM modulos ORDER BY ciclo ASC, curso ASC, nom
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/daisyui@3.8.1/dist/full.css" rel="stylesheet" type="text/css" />
 </head>
-<body class="p-4">
-<div class="max-w-screen-xl mx-auto">
-    <h1 class="text-3xl font-bold mb-4">Gestión de Profesores y Módulos</h1>
-    <p class="mb-6">
-        <a href="asignaciones.php" class="btn btn-primary">Ir a Asignaciones</a>
+<body class="p-2">
+<div class="max-w-screen-xl mx-auto text-sm">
+    <h1 class="text-2xl font-bold mb-2">Gestión de Profesores y Módulos</h1>
+    <p class="mb-2">
+        <a href="asignaciones.php" class="btn btn-primary btn-sm">Ir a Asignaciones</a>
     </p>
-    <div class="grid md:grid-cols-2 gap-8">
+    <div class="grid md:grid-cols-2 gap-4">
         <!-- Formulario Profesor -->
         <div>
-            <h2 class="text-xl font-semibold mb-2">
+            <h2 class="text-lg font-semibold mb-2">
                 <?= isset($editType) && $editType === 'profesor' ? 'Editar Profesor' : 'Nuevo Profesor' ?>
             </h2>
-            <form method="POST" class="space-y-4">
+            <form method="POST" class="space-y-2">
                 <input type="hidden" name="tipo" value="profesor">
                 <?php if (isset($editType) && $editType === 'profesor'): ?>
                     <input type="hidden" name="id" value="<?= $editData['id_profesor'] ?>">
@@ -154,13 +154,13 @@ $modulos = $pdo->query("SELECT * FROM modulos ORDER BY ciclo ASC, curso ASC, nom
                         <?php endforeach; ?>
                     </select>
                 </label>
-                <button type="submit" class="btn btn-primary">
+                <button type="submit" class="btn btn-primary btn-sm">
                     <?= isset($editType) && $editType === 'profesor' ? 'Actualizar' : 'Agregar' ?>
                 </button>
             </form>
-            <h3 class="text-lg font-semibold mt-6 mb-2">Listado de Profesores</h3>
+            <h3 class="text-base font-semibold mt-4 mb-2">Listado de Profesores</h3>
             <div class="overflow-x-auto">
-                <table class="table table-zebra">
+                <table class="table table-zebra text-sm">
                     <thead>
                         <tr>
                             <th>Nombre</th>
@@ -187,10 +187,10 @@ $modulos = $pdo->query("SELECT * FROM modulos ORDER BY ciclo ASC, curso ASC, nom
         </div>
         <!-- Formulario Módulo -->
         <div>
-            <h2 class="text-xl font-semibold mb-2">
+            <h2 class="text-lg font-semibold mb-2">
                 <?= isset($editType) && $editType === 'modulo' ? 'Editar Módulo' : 'Nuevo Módulo' ?>
             </h2>
-            <form method="POST" class="space-y-4">
+            <form method="POST" class="space-y-2">
                 <input type="hidden" name="tipo" value="modulo">
                 <?php if (isset($editType) && $editType === 'modulo'): ?>
                     <input type="hidden" name="id" value="<?= $editData['id_modulo'] ?>">
@@ -233,13 +233,13 @@ $modulos = $pdo->query("SELECT * FROM modulos ORDER BY ciclo ASC, curso ASC, nom
                         <?php endforeach; ?>
                     </select>
                 </label>
-                <button type="submit" class="btn btn-primary">
+                <button type="submit" class="btn btn-primary btn-sm">
                     <?= isset($editType) && $editType === 'modulo' ? 'Actualizar' : 'Agregar' ?>
                 </button>
             </form>
-            <h3 class="text-lg font-semibold mt-6 mb-2">Listado de Módulos</h3>
+            <h3 class="text-base font-semibold mt-4 mb-2">Listado de Módulos</h3>
             <div class="overflow-x-auto">
-                <table class="table table-zebra">
+                <table class="table table-zebra text-sm">
                     <thead>
                         <tr>
                             <th>Nombre</th>
