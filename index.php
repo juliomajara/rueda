@@ -128,7 +128,7 @@ $modulos = $pdo->query("SELECT * FROM modulos ORDER BY ciclo ASC, curso ASC, nom
     <p class="mb-2">
         <a href="asignaciones.php" class="btn btn-primary btn-sm">Ir a Asignaciones</a>
     </p>
-    <div class="grid md:grid-cols-5 gap-4">
+    <div class="grid md:grid-cols-5 gap-y-4 gap-x-8">
         <!-- Formulario Profesor -->
         <div class="md:col-span-2">
             <h2 class="text-lg font-semibold mb-2">
