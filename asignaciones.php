@@ -143,56 +143,41 @@ usort($disponibles, function($a, $b) use ($ordenCiclos) {
     return $posA < $posB ? -1 : 1;
 });
 $totalDisponibles = array_sum(array_column($disponibles, 'horas'));
+$colorClasses = [
+    'smra1' => 'bg-red-200',
+    'smra2' => 'bg-red-400',
+    'smrb1' => 'bg-orange-200',
+    'smrb2' => 'bg-orange-400',
+    'smr1'  => 'bg-red-200',
+    'smr2'  => 'bg-red-400',
+    'asir1' => 'bg-indigo-200',
+    'asir2' => 'bg-indigo-400',
+    'daw1'  => 'bg-green-200',
+    'daw2'  => 'bg-green-400',
+    'dam1'  => 'bg-yellow-200',
+    'dam2'  => 'bg-yellow-400'
+];
 ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <title>Asignaciones</title>
-    <style>
-        .rojo { color: red; }
-        .modulo {
-            padding: 5px;
-            margin: 5px;
-            border: 1px solid #ccc;
-            background: #f0f0f0;
-            cursor: grab;
-            display: inline-block;
-            box-sizing: border-box;
-        }
-        .dropzone {
-            min-height: 30px;
-            padding: 5px;
-            border: 1px dashed #999;
-            margin-bottom: 20px;
-            display: flex;
-            flex-wrap: wrap;
-        }
-        .modulo.smra1 { background: #ffcccc; }
-        .modulo.smra2 { background: #ff6666; }
-        .modulo.smrb1 { background: #ffd9b3; }
-        .modulo.smrb2 { background: #ff9900; }
-        .modulo.smr1 { background: #ffcccc; }
-        .modulo.smr2 { background: #ff6666; }
-        .modulo.asir1 { background: #ccccff; }
-        .modulo.asir2 { background: #6666ff; }
-        .modulo.daw1 { background: #ccffcc; }
-        .modulo.daw2 { background: #66ff66; }
-        .modulo.dam1 { background: #ffffcc; }
-        .modulo.dam2 { background: #ffff66; }
-    </style>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@3.8.1/dist/full.css" rel="stylesheet" type="text/css" />
 </head>
-<body>
-    <h1>Asignaciones</h1>
-    <form method="post">
-        <button type="submit" name="crear">Crear asignación</button>
+<body class="p-4">
+<div class="max-w-screen-lg mx-auto">
+    <h1 class="text-3xl font-bold mb-4">Asignaciones</h1>
+    <form method="post" class="mb-4">
+        <button type="submit" name="crear" class="btn btn-primary">Crear asignación</button>
     </form>
 
     <?php if ($conjuntos): ?>
-        <h2>Conjuntos disponibles</h2>
-        <ul>
+        <h2 class="text-xl font-semibold mb-2">Conjuntos disponibles</h2>
+        <ul class="list-disc list-inside mb-4">
             <?php foreach ($conjuntos as $c): ?>
-                <li><a href="?conjunto=<?= $c ?>">Asignación <?= $c ?></a></li>
+                <li><a class="link link-hover" href="?conjunto=<?= $c ?>">Asignación <?= $c ?></a></li>
             <?php endforeach; ?>
         </ul>
     <?php else: ?>
@@ -202,7 +187,7 @@ $totalDisponibles = array_sum(array_column($disponibles, 'horas'));
     <?php if ($seleccionado !== null): ?>
         <input type="hidden" id="conjuntoActual" value="<?= $seleccionado ?>">
 
-        <h2>Módulos sin asignar: <span id="totalSinAsignar"><?= $totalDisponibles ?></span>h</h2>
+        <h2 class="text-xl font-semibold mb-2">Módulos sin asignar: <span id="totalSinAsignar"><?= $totalDisponibles ?></span>h</h2>
         <?php
             $leyendas = ['SMRA1','SMRA2','SMRB1','SMRB2','ASIR1','ASIR2','DAM1','DAM2','DAW1','DAW2'];
             $grupos = [];
@@ -212,15 +197,16 @@ $totalDisponibles = array_sum(array_column($disponibles, 'horas'));
             }
         ?>
         <?php foreach ($leyendas as $ley): ?>
-            <p><strong><?= $ley ?></strong></p>
-            <div class="dropzone" data-profesor-id="0">
+            <div class="dropzone p-4 border-2 border-dashed rounded-box bg-base-200 mb-6 flex flex-wrap gap-2 min-h-24" data-profesor-id="0">
+                <span class="w-full text-center font-bold mb-2"><?= $ley ?></span>
                 <?php if (!empty($grupos[$ley])): ?>
                     <?php foreach ($grupos[$ley] as $m):
                         $cls = strtolower($m['ciclo']) . ($m['curso'] === '1º' ? '1' : '2');
                         $w = $m['horas'] * 30;
                         $cursoCiclo = $m['ciclo'] . ($m['curso'] === '1º' ? '1' : '2');
+                        $bg = $colorClasses[$cls] ?? 'bg-gray-200';
                     ?>
-                        <div class="modulo <?= $cls ?>" style="width: <?= $w ?>px" draggable="true" data-id="<?= $m['id_modulo'] ?>" data-horas="<?= $m['horas'] ?>" title="<?= htmlspecialchars($m['nombre']) ?> - <?= $cursoCiclo ?>">
+                        <div class="modulo <?= $bg ?> px-2 py-1 border rounded cursor-grab text-sm" style="width: <?= $w ?>px" draggable="true" data-id="<?= $m['id_modulo'] ?>" data-horas="<?= $m['horas'] ?>" title="<?= htmlspecialchars($m['nombre']) ?> - <?= $cursoCiclo ?>">
                             <?= htmlspecialchars($m['abreviatura']) ?> (<?= $m['horas'] ?>h)
                         </div>
                     <?php endforeach; ?>
@@ -229,22 +215,25 @@ $totalDisponibles = array_sum(array_column($disponibles, 'horas'));
         <?php endforeach; ?>
 
         <?php foreach ($datos as $d): ?>
-            <h2><?= htmlspecialchars($d['profesor']['nombre']) ?></h2>
-            <p>Horas asignadas: <span class="total" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>"><?= $d['total'] ?></span> |
-               Faltan hasta 20: <span class="faltan <?= $d['faltan'] === 0 ? '' : 'rojo' ?>" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>"><?= $d['faltan'] ?></span></p>
-            <div class="dropzone" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>">
+            <div class="dropzone p-4 border-2 border-dashed rounded-box bg-base-200 mb-6 flex flex-wrap gap-2 min-h-24" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>">
+                <span class="w-full text-center font-bold mb-2"><?= htmlspecialchars($d['profesor']['nombre']) ?></span>
+                <span class="w-full text-center text-sm mb-2">Horas asignadas: <span class="total" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>"><?= $d['total'] ?></span> |
+                Faltan hasta 20: <span class="faltan <?= $d['faltan'] === 0 ? '' : 'text-red-600' ?>" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>"><?= $d['faltan'] ?></span></span>
                 <?php foreach ($d['modulos'] as $m):
                     $cls = strtolower($m['ciclo']) . ($m['curso'] === '1º' ? '1' : '2');
                     $w = $m['horas'] * 30;
                     $cursoCiclo = $m['ciclo'] . ($m['curso'] === '1º' ? '1' : '2');
+                    $bg = $colorClasses[$cls] ?? 'bg-gray-200';
                 ?>
-                    <div class="modulo <?= $cls ?>" style="width: <?= $w ?>px" draggable="true" data-id="<?= $m['id_modulo'] ?>" data-horas="<?= $m['horas'] ?>" title="<?= htmlspecialchars($m['nombre']) ?> - <?= $cursoCiclo ?>">
+                    <div class="modulo <?= $bg ?> px-2 py-1 border rounded cursor-grab text-sm" style="width: <?= $w ?>px" draggable="true" data-id="<?= $m['id_modulo'] ?>" data-horas="<?= $m['horas'] ?>" title="<?= htmlspecialchars($m['nombre']) ?> - <?= $cursoCiclo ?>">
                         <?= htmlspecialchars($m['abreviatura']) ?> (<?= $m['horas'] ?>h)
                     </div>
                 <?php endforeach; ?>
             </div>
         <?php endforeach; ?>
     <?php endif; ?>
+
+    </div>
 
     <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -265,8 +254,8 @@ $totalDisponibles = array_sum(array_column($disponibles, 'horas'));
                     if (faltanElem) {
                         const faltan = 20 - total;
                         faltanElem.textContent = faltan;
-                        if (faltan === 0) faltanElem.classList.remove('rojo');
-                        else faltanElem.classList.add('rojo');
+                        if (faltan === 0) faltanElem.classList.remove('text-red-600');
+                        else faltanElem.classList.add('text-red-600');
                     }
                 }
             });
