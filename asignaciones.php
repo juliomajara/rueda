@@ -56,7 +56,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crear'])) {
         )->fetchColumn();
 
 
-        $profesores = $pdo->query("SELECT id_profesor FROM profesores ORDER BY numero_de_orden")->fetchAll(PDO::FETCH_ASSOC);
+        $profesores = $pdo->query(
+            "SELECT id_profesor FROM profesores ORDER BY CASE especialidad WHEN 'Informática' THEN 1 WHEN 'SAI' THEN 2 ELSE 3 END, numero_de_orden"
+        )->fetchAll(PDO::FETCH_ASSOC);
         $modulos = $pdo->query("SELECT id_modulo, horas FROM modulos ORDER BY horas DESC")->fetchAll(PDO::FETCH_ASSOC);
 
         // Inicializar horas asignadas
@@ -131,7 +133,9 @@ if (
 $conjuntos = $pdo->query("SELECT DISTINCT conjunto_asignaciones FROM asignaciones ORDER BY conjunto_asignaciones")->fetchAll(PDO::FETCH_COLUMN);
 $seleccionado = isset($_GET['conjunto']) ? (int)$_GET['conjunto'] : null;
 
-$profesores = $pdo->query("SELECT * FROM profesores ORDER BY numero_de_orden")->fetchAll(PDO::FETCH_ASSOC);
+$profesores = $pdo->query(
+    "SELECT * FROM profesores ORDER BY CASE especialidad WHEN 'Informática' THEN 1 WHEN 'SAI' THEN 2 ELSE 3 END, numero_de_orden"
+)->fetchAll(PDO::FETCH_ASSOC);
 $datos = [];
 $asignados = [];
 if ($seleccionado !== null) {
@@ -228,7 +232,10 @@ $colorClasses = [
         <div class="grid grid-cols-2 gap-2">
             <div>
                 <?php foreach ($datos as $d): ?>
-                    <div class="dropzone p-2 border border-dashed rounded-box bg-base-200 mb-2 flex flex-wrap gap-1 min-h-20" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>" data-horas-meta="<?= $d['profesor']['horas'] ?>">
+                    <?php
+                        $dropStyle = $d['profesor']['especialidad'] === 'Informática' ? 'border-solid' : 'border-dotted';
+                    ?>
+                    <div class="dropzone p-2 border-2 border-black <?= $dropStyle ?> rounded-box bg-base-200 mb-2 flex flex-wrap gap-1 min-h-20" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>" data-horas-meta="<?= $d['profesor']['horas'] ?>">
                         <span class="w-full text-center font-bold mb-2">
                             <?= htmlspecialchars($d['profesor']['nombre']) ?> (
                             <span class="total" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>"><?= $d['total'] ?></span>/
