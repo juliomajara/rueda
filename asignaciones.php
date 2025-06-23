@@ -105,7 +105,7 @@ $datos = [];
 $asignados = [];
 if ($seleccionado !== null) {
     foreach ($profesores as $p) {
-        $stmt = $pdo->prepare("SELECT m.id_modulo, m.nombre, m.abreviatura, m.horas, m.curso, m.ciclo FROM asignaciones a JOIN modulos m ON a.id_modulo = m.id_modulo WHERE a.id_profesor = ? AND a.conjunto_asignaciones = ? ORDER BY m.ciclo, m.curso, m.nombre");
+        $stmt = $pdo->prepare("SELECT m.id_modulo, m.nombre, m.abreviatura, m.horas, m.curso, m.ciclo, m.atribucion FROM asignaciones a JOIN modulos m ON a.id_modulo = m.id_modulo WHERE a.id_profesor = ? AND a.conjunto_asignaciones = ? ORDER BY m.ciclo, m.curso, m.nombre");
         $stmt->execute([$p['id_profesor'], $seleccionado]);
         $mods = $stmt->fetchAll(PDO::FETCH_ASSOC);
         foreach ($mods as $mo) {
@@ -167,7 +167,7 @@ $colorClasses = [
     <link href="https://cdn.jsdelivr.net/npm/daisyui@3.8.1/dist/full.css" rel="stylesheet" type="text/css" />
 </head>
 <body class="p-4">
-<div class="max-w-screen-xl mx-auto">
+<div class="w-full">
     <h1 class="text-3xl font-bold mb-4">Asignaciones</h1>
     <form method="post" class="mb-4">
         <button type="submit" name="crear" class="btn btn-primary">Crear asignación</button>
@@ -210,8 +210,16 @@ $colorClasses = [
                                         $w = $m['horas'] * 30;
                                         $cursoCiclo = $m['ciclo'] . ($m['curso'] === '1º' ? '1' : '2');
                                         $bg = $colorClasses[$cls] ?? 'bg-gray-200';
+                                        $border = 'border-4 ';
+                                        if ($m['atribucion'] === 'SAI') {
+                                            $border .= 'border-dotted';
+                                        } elseif ($m['atribucion'] === 'Informática') {
+                                            $border .= 'border-solid';
+                                        } else {
+                                            $border .= 'border-double';
+                                        }
                                     ?>
-                                        <div class="modulo <?= $bg ?> px-2 py-1 border rounded cursor-grab text-sm" style="width: <?= $w ?>px" draggable="true" data-id="<?= $m['id_modulo'] ?>" data-horas="<?= $m['horas'] ?>" title="<?= htmlspecialchars($m['nombre']) ?> - <?= $cursoCiclo ?>">
+                                        <div class="modulo <?= $bg ?> px-2 py-1 <?= $border ?> rounded cursor-grab text-sm" style="width: <?= $w ?>px" draggable="true" data-id="<?= $m['id_modulo'] ?>" data-horas="<?= $m['horas'] ?>" title="<?= htmlspecialchars($m['nombre']) ?> - <?= $cursoCiclo ?>">
                                             <?= htmlspecialchars($m['abreviatura']) ?> (<?= $m['horas'] ?>h)
                                         </div>
                                     <?php endforeach; ?>
@@ -229,8 +237,16 @@ $colorClasses = [
                                         $w = $m['horas'] * 30;
                                         $cursoCiclo = $m['ciclo'] . ($m['curso'] === '1º' ? '1' : '2');
                                         $bg = $colorClasses[$cls] ?? 'bg-gray-200';
+                                        $border = 'border-4 ';
+                                        if ($m['atribucion'] === 'SAI') {
+                                            $border .= 'border-dotted';
+                                        } elseif ($m['atribucion'] === 'Informática') {
+                                            $border .= 'border-solid';
+                                        } else {
+                                            $border .= 'border-double';
+                                        }
                                     ?>
-                                        <div class="modulo <?= $bg ?> px-2 py-1 border rounded cursor-grab text-sm" style="width: <?= $w ?>px" draggable="true" data-id="<?= $m['id_modulo'] ?>" data-horas="<?= $m['horas'] ?>" title="<?= htmlspecialchars($m['nombre']) ?> - <?= $cursoCiclo ?>">
+                                        <div class="modulo <?= $bg ?> px-2 py-1 <?= $border ?> rounded cursor-grab text-sm" style="width: <?= $w ?>px" draggable="true" data-id="<?= $m['id_modulo'] ?>" data-horas="<?= $m['horas'] ?>" title="<?= htmlspecialchars($m['nombre']) ?> - <?= $cursoCiclo ?>">
                                             <?= htmlspecialchars($m['abreviatura']) ?> (<?= $m['horas'] ?>h)
                                         </div>
                                     <?php endforeach; ?>
@@ -251,8 +267,16 @@ $colorClasses = [
                         $w = $m['horas'] * 30;
                         $cursoCiclo = $m['ciclo'] . ($m['curso'] === '1º' ? '1' : '2');
                         $bg = $colorClasses[$cls] ?? 'bg-gray-200';
+                        $border = 'border-4 ';
+                        if ($m['atribucion'] === 'SAI') {
+                            $border .= 'border-dotted';
+                        } elseif ($m['atribucion'] === 'Informática') {
+                            $border .= 'border-solid';
+                        } else {
+                            $border .= 'border-double';
+                        }
                     ?>
-                        <div class="modulo <?= $bg ?> px-2 py-1 border rounded cursor-grab text-sm" style="width: <?= $w ?>px" draggable="true" data-id="<?= $m['id_modulo'] ?>" data-horas="<?= $m['horas'] ?>" title="<?= htmlspecialchars($m['nombre']) ?> - <?= $cursoCiclo ?>">
+                        <div class="modulo <?= $bg ?> px-2 py-1 <?= $border ?> rounded cursor-grab text-sm" style="width: <?= $w ?>px" draggable="true" data-id="<?= $m['id_modulo'] ?>" data-horas="<?= $m['horas'] ?>" title="<?= htmlspecialchars($m['nombre']) ?> - <?= $cursoCiclo ?>">
                             <?= htmlspecialchars($m['abreviatura']) ?> (<?= $m['horas'] ?>h)
                         </div>
                     <?php endforeach; ?>
