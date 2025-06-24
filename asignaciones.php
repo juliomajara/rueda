@@ -374,8 +374,8 @@ foreach ($disponibles as $m) {
 $colorClasses = [
     'smra1' => 'bg-red-200',
     'smra2' => 'bg-red-400',
-    'smrb1' => 'bg-orange-200',
-    'smrb2' => 'bg-orange-400',
+    'smrb1' => 'bg-cyan-200',
+    'smrb2' => 'bg-cyan-400',
     'smr1'  => 'bg-red-200',
     'smr2'  => 'bg-red-400',
     'asir1' => 'bg-indigo-200',
