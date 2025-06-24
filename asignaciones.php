@@ -158,9 +158,16 @@ if ($seleccionado !== null) {
 }
 
 $horasPorAsignar = 0;
+$horasPorAsignarInf = 0;
+$horasPorAsignarSai = 0;
 foreach ($datos as $d) {
     if ($d['diferencia'] > 0) {
         $horasPorAsignar += $d['diferencia'];
+        if ($d['profesor']['especialidad'] === 'Informática') {
+            $horasPorAsignarInf += $d['diferencia'];
+        } elseif ($d['profesor']['especialidad'] === 'SAI') {
+            $horasPorAsignarSai += $d['diferencia'];
+        }
     }
 }
 
@@ -185,6 +192,15 @@ usort($disponibles, function($a, $b) use ($ordenCiclos) {
     return $posA < $posB ? -1 : 1;
 });
 $totalDisponibles = array_sum(array_column($disponibles, 'horas'));
+$totalDisponiblesInf = 0;
+$totalDisponiblesSai = 0;
+foreach ($disponibles as $m) {
+    if ($m['atribucion'] === 'Informática') {
+        $totalDisponiblesInf += $m['horas'];
+    } elseif ($m['atribucion'] === 'SAI') {
+        $totalDisponiblesSai += $m['horas'];
+    }
+}
 $colorClasses = [
     'smra1' => 'bg-red-200',
     'smra2' => 'bg-red-400',
@@ -238,12 +254,12 @@ $colorClasses = [
     </form>
         <div class="grid grid-cols-2 gap-2">
             <div>
-                <h2 class="text-xl font-semibold mb-2">Horas por asignar: <span id="horasPorAsignar"><?= $horasPorAsignar ?></span>h</h2>
+                <h2 class="text-xl font-semibold mb-2">Horas por asignar: <span id="horasPorAsignar"><?= $horasPorAsignar ?></span>h (Inf <span id="porAsignarInf"><?= $horasPorAsignarInf ?></span>h, SAI <span id="porAsignarSai"><?= $horasPorAsignarSai ?></span>h)</h2>
                 <?php foreach ($datos as $d): ?>
                     <?php
                         $dropStyle = $d['profesor']['especialidad'] === 'Informática' ? 'border-solid' : 'border-dotted';
                     ?>
-                    <div class="dropzone p-2 border-2 border-black <?= $dropStyle ?> rounded-box bg-base-200 mb-2 flex flex-wrap gap-1 min-h-20" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>" data-horas-meta="<?= $d['profesor']['horas'] ?>">
+                    <div class="dropzone p-2 border-2 border-black <?= $dropStyle ?> rounded-box bg-base-200 mb-2 flex flex-wrap gap-1 min-h-20" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>" data-horas-meta="<?= $d['profesor']['horas'] ?>" data-especialidad="<?= $d['profesor']['especialidad'] ?>">
                         <span class="w-full text-center font-bold mb-2">
                             <?= htmlspecialchars($d['profesor']['nombre']) ?> (
                             <span class="total" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>"><?= $d['total'] ?></span>/
@@ -264,7 +280,7 @@ $colorClasses = [
                                 $border .= 'border-double';
                             }
                         ?>
-                            <div class="modulo <?= $bg ?> px-1 py-0.5 <?= $border ?> rounded cursor-grab text-xs" style="width: <?= $w ?>px" draggable="true" data-id="<?= $m['id_modulo'] ?>" data-horas="<?= $m['horas'] ?>" data-ciclo="<?= $m['ciclo'] ?>" title="<?= htmlspecialchars($m['nombre']) ?> - <?= $cursoCiclo ?>">
+                            <div class="modulo <?= $bg ?> px-1 py-0.5 <?= $border ?> rounded cursor-grab text-xs" style="width: <?= $w ?>px" draggable="true" data-id="<?= $m['id_modulo'] ?>" data-horas="<?= $m['horas'] ?>" data-ciclo="<?= $m['ciclo'] ?>" data-atribucion="<?= $m['atribucion'] ?>" title="<?= htmlspecialchars($m['nombre']) ?> - <?= $cursoCiclo ?>">
                                 <?= htmlspecialchars($m['abreviatura']) ?> (<?= $m['horas'] ?>h)
                             </div>
                         <?php endforeach; ?>
@@ -272,7 +288,7 @@ $colorClasses = [
                 <?php endforeach; ?>
             </div>
             <div class="space-y-2 sticky top-0 max-h-screen overflow-y-auto">
-                <h2 class="text-xl font-semibold mb-2">Módulos sin asignar: <span id="totalSinAsignar"><?= $totalDisponibles ?></span>h</h2>
+                <h2 class="text-xl font-semibold mb-2">Módulos sin asignar: <span id="totalSinAsignar"><?= $totalDisponibles ?></span>h (Inf <span id="sinInf"><?= $totalDisponiblesInf ?></span>h, SAI <span id="sinSai"><?= $totalDisponiblesSai ?></span>h)</h2>
                 <?php
                     $ciclos = ['SMRA','SMRB','ASIR','DAM','DAW'];
                     $grupos = [];
@@ -299,7 +315,7 @@ $colorClasses = [
                                         $border .= 'border-double';
                                     }
                                 ?>
-                                    <div class="modulo <?= $bg ?> px-1 py-0.5 <?= $border ?> rounded cursor-grab text-xs" style="width: <?= $w ?>px" draggable="true" data-id="<?= $m['id_modulo'] ?>" data-horas="<?= $m['horas'] ?>" data-ciclo="<?= $m['ciclo'] ?>" title="<?= htmlspecialchars($m['nombre']) ?> - <?= $cursoCiclo ?>">
+                                    <div class="modulo <?= $bg ?> px-1 py-0.5 <?= $border ?> rounded cursor-grab text-xs" style="width: <?= $w ?>px" draggable="true" data-id="<?= $m['id_modulo'] ?>" data-horas="<?= $m['horas'] ?>" data-ciclo="<?= $m['ciclo'] ?>" data-atribucion="<?= $m['atribucion'] ?>" title="<?= htmlspecialchars($m['nombre']) ?> - <?= $cursoCiclo ?>">
                                         <?= htmlspecialchars($m['abreviatura']) ?> (<?= $m['horas'] ?>h)
                                     </div>
                                 <?php endforeach; ?>
@@ -317,12 +333,21 @@ $colorClasses = [
     document.addEventListener('DOMContentLoaded', () => {
         function updateTotals() {
             let sinAsignar = 0;
+            let sinInf = 0;
+            let sinSai = 0;
             let faltanTotal = 0;
+            let faltanInf = 0;
+            let faltanSai = 0;
             document.querySelectorAll('.dropzone').forEach(z => {
                 const profId = z.dataset.profesorId;
                 let total = 0;
                 z.querySelectorAll('.modulo').forEach(m => {
-                    total += parseInt(m.dataset.horas, 10);
+                    const horas = parseInt(m.dataset.horas, 10);
+                    total += horas;
+                    if (profId === '0') {
+                        if (m.dataset.atribucion === 'Informática') sinInf += horas;
+                        else if (m.dataset.atribucion === 'SAI') sinSai += horas;
+                    }
                 });
                 if (profId === '0') {
                     sinAsignar += total;
@@ -337,14 +362,26 @@ $colorClasses = [
                         if (diff === 0) faltanElem.classList.remove('text-red-600');
                         else if (diff > 0) faltanElem.classList.add('text-red-600');
                         else faltanElem.classList.remove('text-red-600');
-                        if (diff > 0) faltanTotal += diff;
+                        if (diff > 0) {
+                            faltanTotal += diff;
+                            if (z.dataset.especialidad === 'Informática') faltanInf += diff;
+                            else if (z.dataset.especialidad === 'SAI') faltanSai += diff;
+                        }
                     }
                 }
             });
             const sin = document.getElementById('totalSinAsignar');
             if (sin) sin.textContent = sinAsignar;
+            const sinInfElem = document.getElementById('sinInf');
+            if (sinInfElem) sinInfElem.textContent = sinInf;
+            const sinSaiElem = document.getElementById('sinSai');
+            if (sinSaiElem) sinSaiElem.textContent = sinSai;
             const faltan = document.getElementById('horasPorAsignar');
             if (faltan) faltan.textContent = faltanTotal;
+            const faltanInfElem = document.getElementById('porAsignarInf');
+            if (faltanInfElem) faltanInfElem.textContent = faltanInf;
+            const faltanSaiElem = document.getElementById('porAsignarSai');
+            if (faltanSaiElem) faltanSaiElem.textContent = faltanSai;
         }
 
         document.querySelectorAll('.modulo').forEach(m => {
