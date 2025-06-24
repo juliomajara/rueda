@@ -293,6 +293,10 @@ if (
 
 $conjuntos = $pdo->query("SELECT DISTINCT conjunto_asignaciones FROM asignaciones ORDER BY conjunto_asignaciones")->fetchAll(PDO::FETCH_COLUMN);
 $seleccionado = isset($_GET['conjunto']) ? (int)$_GET['conjunto'] : null;
+// Si no se ha elegido ningún conjunto, generar uno nuevo para permitir asignaciones manuales
+if ($seleccionado === null) {
+    $seleccionado = (int)$pdo->query("SELECT IFNULL(MAX(conjunto_asignaciones), 0) + 1 FROM asignaciones")->fetchColumn();
+}
 
 $profesores = $pdo->query(
     "SELECT * FROM profesores ORDER BY CASE especialidad WHEN 'Informática' THEN 1 WHEN 'SAI' THEN 2 ELSE 3 END, numero_de_orden"
