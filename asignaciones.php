@@ -316,6 +316,15 @@ if ($seleccionado !== null) {
             'diferencia' => $diff
         ];
     }
+} else {
+    foreach ($profesores as $p) {
+        $datos[] = [
+            'profesor'   => $p,
+            'modulos'    => [],
+            'total'      => 0,
+            'diferencia' => $p['horas']
+        ];
+    }
 }
 
 $horasPorAsignar = 0;
@@ -388,9 +397,22 @@ $colorClasses = [
 <body class="p-4">
 <div class="w-full">
     <h1 class="text-3xl font-bold mb-4">Asignaciones</h1>
-    <form method="post" class="mb-4">
-        <button type="submit" name="crear" class="btn btn-primary">Crear asignación</button>
-    </form>
+    <div class="flex gap-2 mb-4">
+        <form method="post">
+            <button type="submit" name="crear" class="btn btn-primary">Crear asignación</button>
+        </form>
+        <?php if ($seleccionado !== null): ?>
+            <input type="hidden" id="conjuntoActual" value="<?= $seleccionado ?>">
+            <form method="post">
+                <input type="hidden" name="conjunto_actual" value="<?= $seleccionado ?>">
+                <button type="submit" name="guardar" class="btn btn-secondary">Guardar asignación</button>
+            </form>
+            <form method="post">
+                <input type="hidden" name="conjunto_actual" value="<?= $seleccionado ?>">
+                <button type="submit" name="completar" class="btn btn-accent">Completar asignación</button>
+            </form>
+        <?php endif; ?>
+    </div>
 
     <?php if ($conjuntos): ?>
         <h2 class="text-xl font-semibold mb-2">Conjuntos disponibles</h2>
@@ -408,15 +430,7 @@ $colorClasses = [
 
     <?php if ($seleccionado !== null): ?>
         <input type="hidden" id="conjuntoActual" value="<?= $seleccionado ?>">
-
-    <form method="post" class="mb-4">
-        <input type="hidden" name="conjunto_actual" value="<?= $seleccionado ?>">
-        <button type="submit" name="guardar" class="btn btn-secondary">Guardar asignación</button>
-    </form>
-    <form method="post" class="mb-4">
-        <input type="hidden" name="conjunto_actual" value="<?= $seleccionado ?>">
-        <button type="submit" name="completar" class="btn btn-accent">Completar asignación</button>
-    </form>
+    <?php endif; ?>
         <div class="grid grid-cols-2 gap-2">
             <div>
                 <h2 class="text-xl font-semibold mb-2">Horas por asignar: <span id="horasPorAsignar"><?= $horasPorAsignar ?></span>h (Inf <span id="porAsignarInf"><?= $horasPorAsignarInf ?></span>h, SAI <span id="porAsignarSai"><?= $horasPorAsignarSai ?></span>h)</h2>
@@ -490,12 +504,14 @@ $colorClasses = [
                 </div>
             </div>
         </div>
-    <?php endif; ?>
 
     </div>
 
     <script>
     document.addEventListener('DOMContentLoaded', () => {
+        const conjuntoInput = document.getElementById('conjuntoActual');
+        const conjuntoValor = conjuntoInput ? conjuntoInput.value : null;
+
         function updateTotals() {
             let sinAsignar = 0;
             let sinInf = 0;
@@ -549,58 +565,60 @@ $colorClasses = [
             if (faltanSaiElem) faltanSaiElem.textContent = faltanSai;
         }
 
-        document.querySelectorAll('.modulo').forEach(m => {
-            m.addEventListener('dragstart', e => {
-                e.dataTransfer.setData('text/plain', m.dataset.id);
-            });
-            m.addEventListener('contextmenu', e => {
-                e.preventDefault();
-                const parent = m.closest('.dropzone');
-                if (!parent || parent.dataset.profesorId === '0') return;
-                const conjunto = document.getElementById('conjuntoActual').value;
-                fetch('asignaciones.php', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                    body: new URLSearchParams({
-                        accion: 'liberar',
-                        modulo_id: m.dataset.id,
-                        conjunto: conjunto
-                    })
-                }).then(() => {
-                    const target = document.querySelector(`.dropzone[data-profesor-id="0"][data-ciclo="${m.dataset.ciclo}"]`);
-                    if (target) target.appendChild(m);
-                    updateTotals();
+        if (conjuntoValor) {
+            document.querySelectorAll('.modulo').forEach(m => {
+                m.addEventListener('dragstart', e => {
+                    e.dataTransfer.setData('text/plain', m.dataset.id);
                 });
-            });
-        });
-
-        document.querySelectorAll('.dropzone').forEach(z => {
-            z.addEventListener('dragover', e => e.preventDefault());
-            z.addEventListener('drop', e => {
-                e.preventDefault();
-                const modId = e.dataTransfer.getData('text/plain');
-                const profId = z.dataset.profesorId;
-                const conjunto = document.getElementById('conjuntoActual').value;
-                const accion = profId === '0' ? 'liberar' : 'asignar';
-
-                fetch('asignaciones.php', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                    body: new URLSearchParams({
-                        accion: accion,
-                        profesor_id: profId,
-                        modulo_id: modId,
-                        conjunto: conjunto
-                    })
-                }).then(() => {
-                    const elem = document.querySelector(`.modulo[data-id="${modId}"]`);
-                    if (elem) {
-                        z.appendChild(elem);
+                m.addEventListener('contextmenu', e => {
+                    e.preventDefault();
+                    const parent = m.closest('.dropzone');
+                    if (!parent || parent.dataset.profesorId === '0') return;
+                    fetch('asignaciones.php', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                        body: new URLSearchParams({
+                            accion: 'liberar',
+                            modulo_id: m.dataset.id,
+                            conjunto: conjuntoValor
+                        })
+                    }).then(() => {
+                        const target = document.querySelector(`.dropzone[data-profesor-id="0"][data-ciclo="${m.dataset.ciclo}"]`);
+                        if (target) target.appendChild(m);
                         updateTotals();
-                    }
+                    });
                 });
             });
-        });
+        }
+
+        if (conjuntoValor) {
+            document.querySelectorAll('.dropzone').forEach(z => {
+                z.addEventListener('dragover', e => e.preventDefault());
+                z.addEventListener('drop', e => {
+                    e.preventDefault();
+                    const modId = e.dataTransfer.getData('text/plain');
+                    const profId = z.dataset.profesorId;
+                    const accion = profId === '0' ? 'liberar' : 'asignar';
+
+                    fetch('asignaciones.php', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                        body: new URLSearchParams({
+                            accion: accion,
+                            profesor_id: profId,
+                            modulo_id: modId,
+                            conjunto: conjuntoValor
+                        })
+                    }).then(() => {
+                        const elem = document.querySelector(`.modulo[data-id="${modId}"]`);
+                        if (elem) {
+                            z.appendChild(elem);
+                            updateTotals();
+                        }
+                    });
+                });
+            });
+        }
 
         updateTotals();
     });
