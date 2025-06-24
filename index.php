@@ -111,7 +111,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['tipo'] === 'modulo') {
 }
 
 // OBTENER DATOS PARA LISTADOS
-$profesores = $pdo->query("SELECT * FROM profesores ORDER BY numero_de_orden ASC")->fetchAll(PDO::FETCH_ASSOC);
+$profesores = $pdo->query("SELECT * FROM profesores ORDER BY especialidad ASC, numero_de_orden ASC")->fetchAll(PDO::FETCH_ASSOC);
 $modulos = $pdo->query("SELECT * FROM modulos ORDER BY ciclo ASC, curso ASC, nombre ASC")->fetchAll(PDO::FETCH_ASSOC);
 $profesoresCount = count($profesores);
 $modulosCount = count($modulos);
