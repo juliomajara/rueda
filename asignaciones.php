@@ -442,7 +442,14 @@ $colorClasses = [
                     <?php
                         $dropStyle = $d['profesor']['especialidad'] === 'Informática' ? 'border-solid' : 'border-dotted';
                     ?>
-                    <div class="dropzone p-2 border-2 border-black <?= $dropStyle ?> rounded-box bg-base-200 mb-2 flex flex-wrap gap-1 min-h-20" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>" data-horas-meta="<?= $d['profesor']['horas'] ?>" data-especialidad="<?= $d['profesor']['especialidad'] ?>">
+                    <?php
+                        $gridCols = $d['profesor']['horas'] + 2;
+                        $gridStyle = "background-size:35px 35px;background-image:" .
+                                     "repeating-linear-gradient(#e5e7eb 0 1px,transparent 1px 35px)," .
+                                     "repeating-linear-gradient(90deg,#e5e7eb 0 1px,transparent 1px 35px);" .
+                                     "min-width:" . ($gridCols * 35) . "px;";
+                    ?>
+                    <div class="dropzone p-2 border-4 border-black <?= $dropStyle ?> rounded-box bg-base-200 mb-2 flex flex-wrap gap-1 min-h-20" style="<?= $gridStyle ?>" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>" data-horas-meta="<?= $d['profesor']['horas'] ?>" data-especialidad="<?= $d['profesor']['especialidad'] ?>">
                         <span class="w-full text-center font-bold mb-2">
                             <?= htmlspecialchars($d['profesor']['nombre']) ?> (
                             <span class="total" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>"><?= $d['total'] ?></span>/
