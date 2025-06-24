@@ -165,6 +165,132 @@ if (
     exit;
 }
 
+// Completar asignación existente asignando módulos pendientes
+if (
+    $_SERVER['REQUEST_METHOD'] === 'POST' &&
+    isset($_POST['completar']) &&
+    isset($_POST['conjunto_actual'])
+) {
+    $actual = (int)$_POST['conjunto_actual'];
+
+    try {
+        $pdo->beginTransaction();
+
+        // Obtener profesores
+        $profesores = $pdo->query(
+            "SELECT * FROM profesores ORDER BY CASE especialidad WHEN 'Informática' THEN 1 WHEN 'SAI' THEN 2 ELSE 3 END, numero_de_orden"
+        )->fetchAll(PDO::FETCH_ASSOC);
+
+        // Inicializar estructuras de control
+        $horasAsignadas = [];
+        $fctAsignadas = [];
+        $cicloCurso = [];
+        foreach ($profesores as $p) {
+            $horasAsignadas[$p['id_profesor']] = 0;
+            $fctAsignadas[$p['id_profesor']] = 0;
+            $cicloCurso[$p['id_profesor']] = [];
+        }
+
+        // Obtener módulos ya asignados para el conjunto actual
+        $stmt = $pdo->prepare(
+            'SELECT a.id_profesor, m.id_modulo, m.horas, m.ciclo, m.curso, m.nombre, m.abreviatura
+             FROM asignaciones a JOIN modulos m ON a.id_modulo = m.id_modulo
+             WHERE a.conjunto_asignaciones = ?'
+        );
+        $stmt->execute([$actual]);
+        $asignadosRows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $asignadosIds = [];
+        foreach ($asignadosRows as $row) {
+            $pid = $row['id_profesor'];
+            $asignadosIds[] = $row['id_modulo'];
+            $horasAsignadas[$pid] += $row['horas'];
+            $cicloCurso[$pid][$row['ciclo']][$row['curso']] = true;
+            $esFct = stripos($row['abreviatura'], 'FCT') !== false || stripos($row['nombre'], 'FCT') !== false;
+            if ($esFct) {
+                $fctAsignadas[$pid]++;
+            }
+        }
+
+        // Obtener módulos sin asignar ordenados por horas
+        $modulos = $pdo->query('SELECT * FROM modulos ORDER BY horas DESC')->fetchAll(PDO::FETCH_ASSOC);
+        $modulosPendientes = array_filter($modulos, function ($m) use ($asignadosIds) {
+            return !in_array($m['id_modulo'], $asignadosIds);
+        });
+
+        // Separar FCT de los demás
+        $modulosFct = [];
+        $modulosNormales = [];
+        foreach ($modulosPendientes as $m) {
+            $esFct = stripos($m['abreviatura'], 'FCT') !== false || stripos($m['nombre'], 'FCT') !== false;
+            if ($esFct) {
+                $m['__fct'] = true;
+                $modulosFct[] = $m;
+            } else {
+                $m['__fct'] = false;
+                $modulosNormales[] = $m;
+            }
+        }
+        $modulosOrdenados = array_merge($modulosNormales, $modulosFct);
+
+        // Asignar módulos pendientes
+        foreach ($modulosOrdenados as $mod) {
+            $mejor = null;
+            $mejorScore = PHP_INT_MAX;
+            foreach ($profesores as $prof) {
+                $pid = $prof['id_profesor'];
+
+                // Restricciones de especialidad
+                if ($prof['especialidad'] === 'SAI' && $mod['atribucion'] === 'Informática') {
+                    continue;
+                }
+
+                // Restricciones FCT
+                if ($mod['__fct']) {
+                    if ($fctAsignadas[$pid] >= 1) {
+                        continue;
+                    }
+                    $cc = $cicloCurso[$pid][$mod['ciclo']][$mod['curso']] ?? false;
+                    if (!$cc) {
+                        continue;
+                    }
+                }
+
+                $nuevoTotal = $horasAsignadas[$pid] + $mod['horas'];
+                if ($nuevoTotal > $prof['horas'] + 2) {
+                    continue;
+                }
+
+                $score = abs($prof['horas'] - $nuevoTotal);
+                $bestHoras = $mejor ? $horasAsignadas[$mejor['id_profesor']] : PHP_INT_MAX;
+                if ($score < $mejorScore || ($score === $mejorScore && $horasAsignadas[$pid] < $bestHoras)) {
+                    $mejor = $prof;
+                    $mejorScore = $score;
+                }
+            }
+
+            if ($mejor !== null) {
+                $stmt = $pdo->prepare(
+                    'INSERT INTO asignaciones (conjunto_asignaciones, id_profesor, id_modulo) VALUES (?, ?, ?)'
+                );
+                $stmt->execute([$actual, $mejor['id_profesor'], $mod['id_modulo']]);
+
+                $horasAsignadas[$mejor['id_profesor']] += $mod['horas'];
+                $cicloCurso[$mejor['id_profesor']][$mod['ciclo']][$mod['curso']] = true;
+                if ($mod['__fct']) {
+                    $fctAsignadas[$mejor['id_profesor']]++;
+                }
+            }
+        }
+
+        $pdo->commit();
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        die('Error al completar asignaciones: ' . $e->getMessage());
+    }
+    header('Location: asignaciones.php?conjunto=' . $actual);
+    exit;
+}
+
 $conjuntos = $pdo->query("SELECT DISTINCT conjunto_asignaciones FROM asignaciones ORDER BY conjunto_asignaciones")->fetchAll(PDO::FETCH_COLUMN);
 $seleccionado = isset($_GET['conjunto']) ? (int)$_GET['conjunto'] : null;
 
@@ -286,6 +412,10 @@ $colorClasses = [
     <form method="post" class="mb-4">
         <input type="hidden" name="conjunto_actual" value="<?= $seleccionado ?>">
         <button type="submit" name="guardar" class="btn btn-secondary">Guardar asignación</button>
+    </form>
+    <form method="post" class="mb-4">
+        <input type="hidden" name="conjunto_actual" value="<?= $seleccionado ?>">
+        <button type="submit" name="completar" class="btn btn-accent">Completar asignación</button>
     </form>
         <div class="grid grid-cols-2 gap-2">
             <div>
