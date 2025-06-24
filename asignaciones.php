@@ -462,7 +462,7 @@ $cellSize = 35; // tamaño base en píxeles por hora
                                     <?php endfor; ?>
                                 </tr>
                             </table>
-                            <div class="modulos relative flex flex-wrap gap-0" style="min-height: <?= $cellSize ?>px">
+                            <div class="modulos relative flex flex-nowrap gap-0" style="min-height: <?= $cellSize ?>px">
                                 <?php foreach ($d['modulos'] as $m):
                                     $cls = strtolower($m['ciclo']) . ($m['curso'] === '1º' ? '1' : '2');
                                     $w = $m['horas'] * $cellSize;
@@ -497,7 +497,7 @@ $cellSize = 35; // tamaño base en píxeles por hora
                 ?>
                 <div class="space-y-2">
                     <?php foreach ($ciclos as $c): ?>
-                        <div class="dropzone p-2 border border-dashed rounded-box bg-base-200 flex flex-wrap gap-1 mb-2" data-profesor-id="0" data-ciclo="<?= $c ?>">
+                        <div class="dropzone p-2 border border-dashed rounded-box bg-base-200 flex flex-nowrap gap-1 mb-2" data-profesor-id="0" data-ciclo="<?= $c ?>">
                             <span class="w-full text-center font-bold mb-1"><?= $c ?></span>
                             <?php if (!empty($grupos[$c])): ?>
                                 <?php foreach ($grupos[$c] as $m):
