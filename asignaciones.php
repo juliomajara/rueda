@@ -389,6 +389,10 @@ $colorClasses = [
     'dam1'  => 'bg-yellow-200',
     'dam2'  => 'bg-yellow-400'
 ];
+$gridBg = "background-size:35px 35px;background-image:" .
+          "repeating-linear-gradient(#e5e7eb 0 1px,transparent 1px 35px)," .
+          "repeating-linear-gradient(90deg,#e5e7eb 0 1px,transparent 1px 35px);" .
+          "background-position:8px 8px;";
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -444,12 +448,9 @@ $colorClasses = [
                     ?>
                     <?php
                         $gridCols = $d['profesor']['horas'] + 2;
-                        $gridStyle = "background-size:35px 35px;background-image:" .
-                                     "repeating-linear-gradient(#e5e7eb 0 1px,transparent 1px 35px)," .
-                                     "repeating-linear-gradient(90deg,#e5e7eb 0 1px,transparent 1px 35px);" .
-                                     "min-width:" . ($gridCols * 35) . "px;";
+                        $gridStyle = $gridBg . "min-width:" . ($gridCols * 35) . "px;";
                     ?>
-                    <div class="dropzone p-2 border-4 border-black <?= $dropStyle ?> rounded-box bg-base-200 mb-2 flex flex-wrap gap-1 min-h-20" style="<?= $gridStyle ?>" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>" data-horas-meta="<?= $d['profesor']['horas'] ?>" data-especialidad="<?= $d['profesor']['especialidad'] ?>">
+                    <div class="dropzone p-2 border-4 border-black <?= $dropStyle ?> rounded-box bg-base-200 mb-2 flex flex-wrap gap-0 min-h-20" style="<?= $gridStyle ?>" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>" data-horas-meta="<?= $d['profesor']['horas'] ?>" data-especialidad="<?= $d['profesor']['especialidad'] ?>">
                         <span class="w-full text-center font-bold mb-2">
                             <?= htmlspecialchars($d['profesor']['nombre']) ?> (
                             <span class="total" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>"><?= $d['total'] ?></span>/
@@ -488,7 +489,7 @@ $colorClasses = [
                 ?>
                 <div class="space-y-2">
                     <?php foreach ($ciclos as $c): ?>
-                        <div class="dropzone p-2 border border-dashed rounded-box bg-base-200 flex flex-wrap gap-1 mb-2 min-h-20" data-profesor-id="0" data-ciclo="<?= $c ?>">
+                        <div class="dropzone p-2 border border-dashed rounded-box bg-base-200 flex flex-wrap gap-0 mb-2 min-h-20" style="<?= $gridBg ?>" data-profesor-id="0" data-ciclo="<?= $c ?>">
                             <span class="w-full text-center font-bold mb-1"><?= $c ?></span>
                             <?php if (!empty($grupos[$c])): ?>
                                 <?php foreach ($grupos[$c] as $m):
