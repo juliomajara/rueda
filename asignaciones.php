@@ -389,7 +389,6 @@ $colorClasses = [
     'dam1'  => 'bg-yellow-200',
     'dam2'  => 'bg-yellow-400'
 ];
-$cellSize = 35; // tamaño base en píxeles por hora
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -443,46 +442,31 @@ $cellSize = 35; // tamaño base en píxeles por hora
                     <?php
                         $dropStyle = $d['profesor']['especialidad'] === 'Informática' ? 'border-solid' : 'border-dotted';
                     ?>
-                    <?php
-                        $gridCols = $d['profesor']['horas'] + 2;
-                        $gridStyle = "min-width:" . ($gridCols * $cellSize) . "px;min-height:" . $cellSize . "px;";
-                    ?>
-                    <div class="dropzone relative p-2 border-4 border-black <?= $dropStyle ?> rounded-box bg-base-200 mb-2" style="<?= $gridStyle ?>" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>" data-horas-meta="<?= $d['profesor']['horas'] ?>" data-especialidad="<?= $d['profesor']['especialidad'] ?>">
-                        <span class="block w-full text-center font-bold mb-2">
+                    <div class="dropzone p-2 border-2 border-black <?= $dropStyle ?> rounded-box bg-base-200 mb-2 flex flex-wrap gap-1 min-h-20" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>" data-horas-meta="<?= $d['profesor']['horas'] ?>" data-especialidad="<?= $d['profesor']['especialidad'] ?>">
+                        <span class="w-full text-center font-bold mb-2">
                             <?= htmlspecialchars($d['profesor']['nombre']) ?> (
                             <span class="total" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>"><?= $d['total'] ?></span>/
                             <span class="faltan <?= $d['diferencia'] > 0 ? 'text-red-600' : '' ?>" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>"><?= ($d['diferencia'] >= 0 ? '-' : '+') . abs($d['diferencia']) ?></span>) -
                             <?= $d['profesor']['especialidad'] ?>
                         </span>
-                        <div class="relative" style="min-height: <?= $cellSize ?>px">
-                            <table class="absolute inset-0 border-collapse pointer-events-none">
-                                <tr>
-                                    <?php for ($i = 0; $i < $gridCols; $i++): ?>
-                                        <td class="border border-gray-300" style="width: <?= $cellSize ?>px;height: <?= $cellSize ?>px"></td>
-                                    <?php endfor; ?>
-                                </tr>
-                            </table>
-                            <div class="modulos relative flex flex-nowrap gap-0" style="min-height: <?= $cellSize ?>px">
-                                <?php foreach ($d['modulos'] as $m):
-                                    $cls = strtolower($m['ciclo']) . ($m['curso'] === '1º' ? '1' : '2');
-                                    $w = $m['horas'] * $cellSize;
-                                    $cursoCiclo = $m['ciclo'] . ($m['curso'] === '1º' ? '1' : '2');
-                                    $bg = $colorClasses[$cls] ?? 'bg-gray-200';
-                                    $border = 'border-4 border-black ';
-                                    if ($m['atribucion'] === 'SAI') {
-                                        $border .= 'border-dotted';
-                                    } elseif ($m['atribucion'] === 'Informática') {
-                                        $border .= 'border-solid';
-                                    } else {
-                                        $border .= 'border-double';
-                                    }
-                                ?>
-                                    <div class="modulo <?= $bg ?> flex items-center justify-center <?= $border ?> rounded cursor-grab text-xs text-center" style="width: <?= $w ?>px;height: <?= $cellSize ?>px" draggable="true" data-id="<?= $m['id_modulo'] ?>" data-horas="<?= $m['horas'] ?>" data-ciclo="<?= $m['ciclo'] ?>" data-atribucion="<?= $m['atribucion'] ?>" title="<?= htmlspecialchars($m['nombre']) ?> - <?= $cursoCiclo ?>">
-                                        <?= htmlspecialchars($m['abreviatura']) ?> (<?= $m['horas'] ?>h)
-                                    </div>
-                                <?php endforeach; ?>
+                        <?php foreach ($d['modulos'] as $m):
+                            $cls = strtolower($m['ciclo']) . ($m['curso'] === '1º' ? '1' : '2');
+                            $w = $m['horas'] * 35;
+                            $cursoCiclo = $m['ciclo'] . ($m['curso'] === '1º' ? '1' : '2');
+                            $bg = $colorClasses[$cls] ?? 'bg-gray-200';
+                            $border = 'border-4 border-black ';
+                            if ($m['atribucion'] === 'SAI') {
+                                $border .= 'border-dotted';
+                            } elseif ($m['atribucion'] === 'Informática') {
+                                $border .= 'border-solid';
+                            } else {
+                                $border .= 'border-double';
+                            }
+                        ?>
+                            <div class="modulo <?= $bg ?> px-1 py-0.5 <?= $border ?> rounded cursor-grab text-xs text-center" style="width: <?= $w ?>px" draggable="true" data-id="<?= $m['id_modulo'] ?>" data-horas="<?= $m['horas'] ?>" data-ciclo="<?= $m['ciclo'] ?>" data-atribucion="<?= $m['atribucion'] ?>" title="<?= htmlspecialchars($m['nombre']) ?> - <?= $cursoCiclo ?>">
+                                <?= htmlspecialchars($m['abreviatura']) ?> (<?= $m['horas'] ?>h)
                             </div>
-                        </div>
+                        <?php endforeach; ?>
                     </div>
                 <?php endforeach; ?>
             </div>
@@ -497,12 +481,12 @@ $cellSize = 35; // tamaño base en píxeles por hora
                 ?>
                 <div class="space-y-2">
                     <?php foreach ($ciclos as $c): ?>
-                        <div class="dropzone p-2 border border-dashed rounded-box bg-base-200 flex flex-nowrap gap-1 mb-2" data-profesor-id="0" data-ciclo="<?= $c ?>">
+                        <div class="dropzone p-2 border border-dashed rounded-box bg-base-200 flex flex-wrap gap-1 mb-2 min-h-20" data-profesor-id="0" data-ciclo="<?= $c ?>">
                             <span class="w-full text-center font-bold mb-1"><?= $c ?></span>
                             <?php if (!empty($grupos[$c])): ?>
                                 <?php foreach ($grupos[$c] as $m):
                                     $cls = strtolower($m['ciclo']) . ($m['curso'] === '1º' ? '1' : '2');
-                                    $w = $m['horas'] * $cellSize;
+                                    $w = $m['horas'] * 35;
                                     $cursoCiclo = $m['ciclo'] . ($m['curso'] === '1º' ? '1' : '2');
                                     $bg = $colorClasses[$cls] ?? 'bg-gray-200';
                                     $border = 'border-4 border-black ';
@@ -514,7 +498,7 @@ $cellSize = 35; // tamaño base en píxeles por hora
                                         $border .= 'border-double';
                                     }
                                 ?>
-                                    <div class="modulo <?= $bg ?> flex items-center justify-center <?= $border ?> rounded cursor-grab text-xs text-center" style="width: <?= $w ?>px;height: <?= $cellSize ?>px" draggable="true" data-id="<?= $m['id_modulo'] ?>" data-horas="<?= $m['horas'] ?>" data-ciclo="<?= $m['ciclo'] ?>" data-atribucion="<?= $m['atribucion'] ?>" title="<?= htmlspecialchars($m['nombre']) ?> - <?= $cursoCiclo ?>">
+                                    <div class="modulo <?= $bg ?> px-1 py-0.5 <?= $border ?> rounded cursor-grab text-xs text-center" style="width: <?= $w ?>px" draggable="true" data-id="<?= $m['id_modulo'] ?>" data-horas="<?= $m['horas'] ?>" data-ciclo="<?= $m['ciclo'] ?>" data-atribucion="<?= $m['atribucion'] ?>" title="<?= htmlspecialchars($m['nombre']) ?> - <?= $cursoCiclo ?>">
                                         <?= htmlspecialchars($m['abreviatura']) ?> (<?= $m['horas'] ?>h)
                                     </div>
                                 <?php endforeach; ?>
