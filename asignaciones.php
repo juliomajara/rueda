@@ -61,24 +61,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crear'])) {
         )->fetchAll(PDO::FETCH_ASSOC);
         $modulos = $pdo->query("SELECT * FROM modulos ORDER BY horas DESC")->fetchAll(PDO::FETCH_ASSOC);
 
-        // Conjunto de modulos de segundo curso por ciclo
-        $segundoPorCiclo = [];
-        foreach ($modulos as $m) {
-            if ($m['curso'] === '2º') {
-                $segundoPorCiclo[$m['ciclo']][] = $m['id_modulo'];
-            }
-        }
-
         // Preparar estructuras de control
         $horasAsignadas = [];
         $fctAsignadas = [];
         $cicloCurso = [];
-        $segundoAsignados = [];
         foreach ($profesores as $p) {
             $horasAsignadas[$p['id_profesor']] = 0;
             $fctAsignadas[$p['id_profesor']] = 0;
             $cicloCurso[$p['id_profesor']] = [];
-            $segundoAsignados[$p['id_profesor']] = [];
         }
 
         // Separar modulos FCT de los demás
@@ -118,15 +108,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crear'])) {
                     }
                 }
 
-                if ($mod['curso'] === '2º') {
-                    $actuales = $segundoAsignados[$pid][$mod['ciclo']] ?? [];
-                    $todos = $segundoPorCiclo[$mod['ciclo']] ?? [];
-                    $wouldHave = array_unique(array_merge($actuales, [$mod['id_modulo']]));
-                    if (count(array_diff($todos, $wouldHave)) === 0) {
-                        continue;
-                    }
-                }
-
                 $nuevoTotal = $horasAsignadas[$pid] + $mod['horas'];
                 if ($nuevoTotal > $prof['horas'] + 2) {
                     continue;
@@ -148,9 +129,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crear'])) {
 
                 $horasAsignadas[$mejor['id_profesor']] += $mod['horas'];
                 $cicloCurso[$mejor['id_profesor']][$mod['ciclo']][$mod['curso']] = true;
-                if ($mod['curso'] === '2º') {
-                    $segundoAsignados[$mejor['id_profesor']][$mod['ciclo']][] = $mod['id_modulo'];
-                }
                 if ($mod['__fct']) {
                     $fctAsignadas[$mejor['id_profesor']]++;
                 }
@@ -207,12 +185,10 @@ if (
         $horasAsignadas = [];
         $fctAsignadas = [];
         $cicloCurso = [];
-        $segundoAsignados = [];
         foreach ($profesores as $p) {
             $horasAsignadas[$p['id_profesor']] = 0;
             $fctAsignadas[$p['id_profesor']] = 0;
             $cicloCurso[$p['id_profesor']] = [];
-            $segundoAsignados[$p['id_profesor']] = [];
         }
 
         // Obtener módulos ya asignados para el conjunto actual
@@ -233,22 +209,10 @@ if (
             if ($esFct) {
                 $fctAsignadas[$pid]++;
             }
-            if ($row['curso'] === '2º') {
-                $segundoAsignados[$pid][$row['ciclo']][] = $row['id_modulo'];
-            }
         }
 
         // Obtener módulos sin asignar ordenados por horas
         $modulos = $pdo->query('SELECT * FROM modulos ORDER BY horas DESC')->fetchAll(PDO::FETCH_ASSOC);
-
-        // Modulos de segundo curso por ciclo
-        $segundoPorCiclo = [];
-        foreach ($modulos as $mm) {
-            if ($mm['curso'] === '2º') {
-                $segundoPorCiclo[$mm['ciclo']][] = $mm['id_modulo'];
-            }
-        }
-
         $modulosPendientes = array_filter($modulos, function ($m) use ($asignadosIds) {
             return !in_array($m['id_modulo'], $asignadosIds);
         });
@@ -312,9 +276,6 @@ if (
 
                 $horasAsignadas[$mejor['id_profesor']] += $mod['horas'];
                 $cicloCurso[$mejor['id_profesor']][$mod['ciclo']][$mod['curso']] = true;
-                if ($mod['curso'] === '2º') {
-                    $segundoAsignados[$mejor['id_profesor']][$mod['ciclo']][] = $mod['id_modulo'];
-                }
                 if ($mod['__fct']) {
                     $fctAsignadas[$mejor['id_profesor']]++;
                 }
@@ -381,67 +342,6 @@ foreach ($datos as $d) {
 }
 
 $allModulos = $pdo->query("SELECT * FROM modulos")->fetchAll(PDO::FETCH_ASSOC);
-
-$erroresMenosHoras = [];
-$erroresMasHoras = [];
-$erroresFctSinClase = [];
-$erroresTodosSegundo = [];
-
-$segundoPorCicloAll = [];
-foreach ($allModulos as $m) {
-    if ($m['curso'] === '2º') {
-        $segundoPorCicloAll[$m['ciclo']][] = $m['id_modulo'];
-    }
-}
-
-foreach ($datos as $d) {
-    $nombre = $d['profesor']['nombre'];
-    if ($d['diferencia'] > 0) {
-        $erroresMenosHoras[] = $nombre;
-    }
-    if ($d['diferencia'] < -2) {
-        $erroresMasHoras[] = $nombre;
-    }
-
-    $cursosNoFct = [];
-    $segundoAsign = [];
-    foreach ($d['modulos'] as $m) {
-        $esFct = stripos($m['abreviatura'], 'FCT') !== false || stripos($m['nombre'], 'FCT') !== false;
-        if (!$esFct) {
-            $cursosNoFct[$m['ciclo']][$m['curso']] = true;
-        }
-        if ($m['curso'] === '2º') {
-            $segundoAsign[$m['ciclo']][] = $m['id_modulo'];
-        }
-    }
-    foreach ($d['modulos'] as $m) {
-        $esFct = stripos($m['abreviatura'], 'FCT') !== false || stripos($m['nombre'], 'FCT') !== false;
-        if ($esFct && empty($cursosNoFct[$m['ciclo']][$m['curso']])) {
-            $erroresFctSinClase[$nombre] = true;
-        }
-    }
-    foreach ($segundoPorCicloAll as $ciclo => $mods) {
-        if (isset($segundoAsign[$ciclo]) && count(array_diff($mods, $segundoAsign[$ciclo])) === 0) {
-            $erroresTodosSegundo[] = $nombre;
-            break;
-        }
-    }
-}
-$erroresFctSinClase = array_keys($erroresFctSinClase);
-
-$errorMessages = [];
-if (!empty($erroresMenosHoras)) {
-    $errorMessages[] = 'Hay profesores con menos horas asignadas de las requeridas: ' . implode(', ', $erroresMenosHoras);
-}
-if (!empty($erroresMasHoras)) {
-    $errorMessages[] = 'Hay profesores con más horas asignadas de lo permitido: ' . implode(', ', $erroresMasHoras);
-}
-if (!empty($erroresFctSinClase)) {
-    $errorMessages[] = 'Hay módulos de FCT asignados sin que el profesor dé clase a esos alumnos: ' . implode(', ', $erroresFctSinClase);
-}
-if (!empty($erroresTodosSegundo)) {
-    $errorMessages[] = 'Hay profesores con todos los módulos de segundo curso: ' . implode(', ', $erroresTodosSegundo);
-}
 $disponibles = array_filter($allModulos, function($m) use ($asignados) {
     return !in_array($m['id_modulo'], $asignados);
 });
@@ -497,9 +397,7 @@ $colorClasses = [
 <body class="p-4">
 <div class="w-full">
     <h1 class="text-3xl font-bold mb-4">Asignaciones</h1>
-    <div class="grid grid-cols-2 gap-4">
-        <div>
-            <div class="flex gap-2 mb-4">
+    <div class="flex gap-2 mb-4">
         <form method="post">
             <button type="submit" name="crear" class="btn btn-primary">Crear asignación</button>
         </form>
@@ -606,15 +504,7 @@ $colorClasses = [
                 </div>
             </div>
         </div>
-        <div>
-            <?php if (!empty($errorMessages)): ?>
-                <div class="space-y-2">
-                    <?php foreach ($errorMessages as $msg): ?>
-                        <p class="text-red-600"><?= htmlspecialchars($msg) ?></p>
-                    <?php endforeach; ?>
-                </div>
-            <?php endif; ?>
-        </div>
+
     </div>
 
     <script>
