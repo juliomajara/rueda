@@ -157,6 +157,13 @@ if ($seleccionado !== null) {
     }
 }
 
+$horasPorAsignar = 0;
+foreach ($datos as $d) {
+    if ($d['diferencia'] > 0) {
+        $horasPorAsignar += $d['diferencia'];
+    }
+}
+
 $allModulos = $pdo->query("SELECT * FROM modulos")->fetchAll(PDO::FETCH_ASSOC);
 $disponibles = array_filter($allModulos, function($m) use ($asignados) {
     return !in_array($m['id_modulo'], $asignados);
@@ -231,6 +238,7 @@ $colorClasses = [
     </form>
         <div class="grid grid-cols-2 gap-2">
             <div>
+                <h2 class="text-xl font-semibold mb-2">Horas por asignar: <span id="horasPorAsignar"><?= $horasPorAsignar ?></span>h</h2>
                 <?php foreach ($datos as $d): ?>
                     <?php
                         $dropStyle = $d['profesor']['especialidad'] === 'Informática' ? 'border-solid' : 'border-dotted';
@@ -309,6 +317,7 @@ $colorClasses = [
     document.addEventListener('DOMContentLoaded', () => {
         function updateTotals() {
             let sinAsignar = 0;
+            let faltanTotal = 0;
             document.querySelectorAll('.dropzone').forEach(z => {
                 const profId = z.dataset.profesorId;
                 let total = 0;
@@ -328,11 +337,14 @@ $colorClasses = [
                         if (diff === 0) faltanElem.classList.remove('text-red-600');
                         else if (diff > 0) faltanElem.classList.add('text-red-600');
                         else faltanElem.classList.remove('text-red-600');
+                        if (diff > 0) faltanTotal += diff;
                     }
                 }
             });
             const sin = document.getElementById('totalSinAsignar');
             if (sin) sin.textContent = sinAsignar;
+            const faltan = document.getElementById('horasPorAsignar');
+            if (faltan) faltan.textContent = faltanTotal;
         }
 
         document.querySelectorAll('.modulo').forEach(m => {
