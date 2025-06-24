@@ -50,53 +50,88 @@ if (isset($_GET['eliminar_asignacion'])) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crear'])) {
     try {
         $pdo->beginTransaction();
-        // Calcular el número de conjunto para esta asignación
+        // Nuevo identificador de conjunto
         $nuevoConjunto = (int)$pdo->query(
             "SELECT IFNULL(MAX(conjunto_asignaciones), 0) + 1 FROM asignaciones"
         )->fetchColumn();
 
-
+        // Obtener profesores completos (horas y especialidad)
         $profesores = $pdo->query(
-            "SELECT id_profesor FROM profesores ORDER BY CASE especialidad WHEN 'Informática' THEN 1 WHEN 'SAI' THEN 2 ELSE 3 END, numero_de_orden"
+            "SELECT * FROM profesores ORDER BY CASE especialidad WHEN 'Informática' THEN 1 WHEN 'SAI' THEN 2 ELSE 3 END, numero_de_orden"
         )->fetchAll(PDO::FETCH_ASSOC);
-        $modulos = $pdo->query("SELECT id_modulo, horas FROM modulos ORDER BY horas DESC")->fetchAll(PDO::FETCH_ASSOC);
+        $modulos = $pdo->query("SELECT * FROM modulos ORDER BY horas DESC")->fetchAll(PDO::FETCH_ASSOC);
 
-        // Inicializar horas asignadas
-        $horas = [];
+        // Preparar estructuras de control
+        $horasAsignadas = [];
+        $fctAsignadas = [];
+        $cicloCurso = [];
         foreach ($profesores as $p) {
-            $horas[$p['id_profesor']] = 0;
+            $horasAsignadas[$p['id_profesor']] = 0;
+            $fctAsignadas[$p['id_profesor']] = 0;
+            $cicloCurso[$p['id_profesor']] = [];
         }
 
-        // Asignar modulos
+        // Separar modulos FCT de los demás
+        $modulosFct = [];
+        $modulosNormales = [];
         foreach ($modulos as $m) {
-            $seleccion = null;
-            $minHoras = PHP_INT_MAX;
-
-            // Priorizar profesores con menos de 20 horas
-            foreach ($profesores as $p) {
-                $hActual = $horas[$p['id_profesor']];
-                if ($hActual < 20 && ($hActual + $m['horas']) <= 22 && $hActual < $minHoras) {
-                    $minHoras = $hActual;
-                    $seleccion = $p['id_profesor'];
-                }
+            $esFct = stripos($m['abreviatura'], 'FCT') !== false || stripos($m['nombre'], 'FCT') !== false;
+            if ($esFct) {
+                $m['__fct'] = true;
+                $modulosFct[] = $m;
+            } else {
+                $m['__fct'] = false;
+                $modulosNormales[] = $m;
             }
-            // Si ninguno cumple, seleccionar el que menos horas tenga sin superar 22
-            if ($seleccion === null) {
-                foreach ($profesores as $p) {
-                    $hActual = $horas[$p['id_profesor']];
-                    if (($hActual + $m['horas']) <= 22 && $hActual < $minHoras) {
-                        $minHoras = $hActual;
-                        $seleccion = $p['id_profesor'];
+        }
+        $modulosOrdenados = array_merge($modulosNormales, $modulosFct);
+
+        foreach ($modulosOrdenados as $mod) {
+            $mejor = null;
+            $mejorScore = PHP_INT_MAX;
+            foreach ($profesores as $prof) {
+                $pid = $prof['id_profesor'];
+
+                // Restricciones de especialidad
+                if ($prof['especialidad'] === 'SAI' && $mod['atribucion'] === 'Informática') {
+                    continue;
+                }
+
+                // Restricciones FCT
+                if ($mod['__fct']) {
+                    if ($fctAsignadas[$pid] >= 1) {
+                        continue;
+                    }
+                    $cc = $cicloCurso[$pid][$mod['ciclo']][$mod['curso']] ?? false;
+                    if (!$cc) {
+                        continue;
                     }
                 }
+
+                $nuevoTotal = $horasAsignadas[$pid] + $mod['horas'];
+                if ($nuevoTotal > $prof['horas'] + 2) {
+                    continue;
+                }
+
+                $score = abs($prof['horas'] - $nuevoTotal);
+                $bestHoras = $mejor ? $horasAsignadas[$mejor['id_profesor']] : PHP_INT_MAX;
+                if ($score < $mejorScore || ($score === $mejorScore && $horasAsignadas[$pid] < $bestHoras)) {
+                    $mejor = $prof;
+                    $mejorScore = $score;
+                }
             }
 
-            if ($seleccion !== null) {
+            if ($mejor !== null) {
                 $stmt = $pdo->prepare(
                     "INSERT INTO asignaciones (conjunto_asignaciones, id_profesor, id_modulo) VALUES (?, ?, ?)"
                 );
-                $stmt->execute([$nuevoConjunto, $seleccion, $m['id_modulo']]);
-                $horas[$seleccion] += $m['horas'];
+                $stmt->execute([$nuevoConjunto, $mejor['id_profesor'], $mod['id_modulo']]);
+
+                $horasAsignadas[$mejor['id_profesor']] += $mod['horas'];
+                $cicloCurso[$mejor['id_profesor']][$mod['ciclo']][$mod['curso']] = true;
+                if ($mod['__fct']) {
+                    $fctAsignadas[$mejor['id_profesor']]++;
+                }
             }
         }
 
