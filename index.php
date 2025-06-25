@@ -140,7 +140,27 @@ $colorClasses = [
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/daisyui@3.8.1/dist/full.css" rel="stylesheet" type="text/css" />
 </head>
-<body class="p-2">
+<body class="p-2 bg-gray-100">
+<style>
+    .floating { position: relative; }
+    .floating input,
+    .floating select { padding-top: 1.25rem; }
+    .floating label { position: absolute; left: 0.75rem; top: 0.75rem; pointer-events: none; background: white; padding: 0 0.25rem; transition: all .2s ease; }
+    .floating input:focus + label,
+    .floating input:not(:placeholder-shown) + label,
+    .floating select:focus + label,
+    .floating select:not([value=""]) + label { transform: translateY(-0.75rem) scale(.75); color: #3b82f6; }
+</style>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.floating select').forEach(s => {
+        if (s.value) s.setAttribute('value', s.value);
+        s.addEventListener('change', () => {
+            if (s.value) s.setAttribute('value', s.value); else s.removeAttribute('value');
+        });
+    });
+});
+</script>
 <div class="w-full text-xs">
     <h1 class="text-2xl font-bold mb-2">Gestión de Profesores y Módulos</h1>
     <p class="mb-2">
@@ -148,7 +168,7 @@ $colorClasses = [
     </p>
     <div class="grid md:grid-cols-5 gap-y-4 gap-x-8">
         <!-- Formulario Profesor -->
-        <div class="md:col-span-2">
+        <div class="md:col-span-2 bg-white rounded-lg p-4 shadow">
             <h2 class="text-lg font-semibold mb-2">
                 <?= isset($editType) && $editType === 'profesor' ? 'Editar Profesor' : 'Nuevo Profesor' ?>
             </h2>
@@ -157,28 +177,28 @@ $colorClasses = [
                 <?php if (isset($editType) && $editType === 'profesor'): ?>
                     <input type="hidden" name="id" value="<?= $editProfesor['id_profesor'] ?>">
                 <?php endif; ?>
-                <label class="form-control">
-                    <span class="label-text">Nombre:</span>
-                    <input class="input input-bordered input-sm" type="text" name="nombre" value="<?= $editProfesor['nombre'] ?? '' ?>" required>
-                </label>
+                <div class="form-control floating">
+                    <input id="prof-nombre" class="input input-bordered input-sm w-full peer" type="text" name="nombre" placeholder=" " value="<?= $editProfesor['nombre'] ?? '' ?>" required>
+                    <label for="prof-nombre">Nombre</label>
+                </div>
                 <div class="flex gap-2">
-                    <label class="form-control flex-1">
-                        <span class="label-text">Horas totales:</span>
-                        <input class="input input-bordered input-sm" type="number" name="horas" min="0" value="<?= $editProfesor['horas'] ?? '' ?>" required>
-                    </label>
-                    <label class="form-control flex-1">
-                        <span class="label-text">Número de orden:</span>
-                        <input class="input input-bordered input-sm" type="number" name="numero_de_orden" min="1" value="<?= $editProfesor['numero_de_orden'] ?? '' ?>" required>
-                    </label>
-                    <label class="form-control flex-1">
-                        <span class="label-text">Especialidad:</span>
-                        <select class="select select-bordered select-sm" name="especialidad" required>
+                    <div class="form-control flex-1 floating">
+                        <input id="prof-horas" class="input input-bordered input-sm w-full peer" type="number" name="horas" placeholder=" " min="0" value="<?= $editProfesor['horas'] ?? '' ?>" required>
+                        <label for="prof-horas">Horas totales</label>
+                    </div>
+                    <div class="form-control flex-1 floating">
+                        <input id="prof-orden" class="input input-bordered input-sm w-full peer" type="number" name="numero_de_orden" placeholder=" " min="1" value="<?= $editProfesor['numero_de_orden'] ?? '' ?>" required>
+                        <label for="prof-orden">Número de orden</label>
+                    </div>
+                    <div class="form-control flex-1 floating">
+                        <select id="prof-especialidad" class="select select-bordered select-sm w-full peer" name="especialidad" required>
                             <option value="">Seleccione</option>
                             <?php foreach ($especialidades as $e): ?>
                                 <option value="<?= $e ?>" <?= isset($editProfesor) && $editProfesor['especialidad'] === $e ? 'selected' : '' ?>><?= $e ?></option>
                             <?php endforeach; ?>
                         </select>
-                    </label>
+                        <label for="prof-especialidad">Especialidad</label>
+                    </div>
                 </div>
                 <button type="submit" class="btn btn-primary btn-sm">
                     <?= isset($editType) && $editType === 'profesor' ? 'Actualizar' : 'Agregar' ?>
@@ -214,7 +234,7 @@ $colorClasses = [
             </div>
         </div>
         <!-- Formulario Módulo -->
-        <div class="md:col-span-3">
+        <div class="md:col-span-3 bg-white rounded-lg p-4 shadow">
             <h2 class="text-lg font-semibold mb-2">
                 <?= isset($editType) && $editType === 'modulo' ? 'Editar Módulo' : 'Nuevo Módulo' ?>
             </h2>
@@ -224,46 +244,46 @@ $colorClasses = [
                     <input type="hidden" name="id" value="<?= $editModulo['id_modulo'] ?>">
                 <?php endif; ?>
                 <div class="flex flex-wrap gap-2">
-                    <label class="form-control flex-1">
-                        <span class="label-text">Nombre:</span>
-                        <input class="input input-bordered input-sm" type="text" name="nombre" value="<?= $editModulo['nombre'] ?? '' ?>" required>
-                    </label>
-                    <label class="form-control flex-1">
-                        <span class="label-text">Abreviatura:</span>
-                        <input class="input input-bordered input-sm" type="text" name="abreviatura" value="<?= $editModulo['abreviatura'] ?? '' ?>" required>
-                    </label>
+                    <div class="form-control flex-1 floating">
+                        <input id="mod-nombre" class="input input-bordered input-sm w-full peer" type="text" name="nombre" placeholder=" " value="<?= $editModulo['nombre'] ?? '' ?>" required>
+                        <label for="mod-nombre">Nombre</label>
+                    </div>
+                    <div class="form-control flex-1 floating">
+                        <input id="mod-abreviatura" class="input input-bordered input-sm w-full peer" type="text" name="abreviatura" placeholder=" " value="<?= $editModulo['abreviatura'] ?? '' ?>" required>
+                        <label for="mod-abreviatura">Abreviatura</label>
+                    </div>
                 </div>
                 <div class="flex flex-wrap gap-2">
-                    <label class="form-control flex-1">
-                        <span class="label-text">Horas:</span>
-                        <input class="input input-bordered input-sm" type="number" name="horas" min="1" value="<?= $editModulo['horas'] ?? '' ?>" required>
-                    </label>
-                    <label class="form-control flex-1">
-                        <span class="label-text">Curso:</span>
-                        <select class="select select-bordered select-sm" name="curso" required>
+                    <div class="form-control flex-1 floating">
+                        <input id="mod-horas" class="input input-bordered input-sm w-full peer" type="number" name="horas" placeholder=" " min="1" value="<?= $editModulo['horas'] ?? '' ?>" required>
+                        <label for="mod-horas">Horas</label>
+                    </div>
+                    <div class="form-control flex-1 floating">
+                        <select id="mod-curso" class="select select-bordered select-sm w-full peer" name="curso" required>
                             <option value="">Seleccione</option>
                             <option value="1º" <?= isset($editModulo) && $editModulo['curso'] === '1º' ? 'selected' : '' ?>>1º</option>
                             <option value="2º" <?= isset($editModulo) && $editModulo['curso'] === '2º' ? 'selected' : '' ?>>2º</option>
                         </select>
-                    </label>
-                    <label class="form-control flex-1">
-                        <span class="label-text">Ciclo:</span>
-                        <select class="select select-bordered select-sm" name="ciclo" required>
+                        <label for="mod-curso">Curso</label>
+                    </div>
+                    <div class="form-control flex-1 floating">
+                        <select id="mod-ciclo" class="select select-bordered select-sm w-full peer" name="ciclo" required>
                             <option value="">Seleccione</option>
                             <?php foreach ($ciclos as $c): ?>
                                 <option value="<?= $c ?>" <?= isset($editModulo) && $editModulo['ciclo'] === $c ? 'selected' : '' ?>><?= $c ?></option>
                             <?php endforeach; ?>
                         </select>
-                    </label>
-                    <label class="form-control flex-1">
-                        <span class="label-text">Atribución:</span>
-                        <select class="select select-bordered select-sm" name="atribucion" required>
+                        <label for="mod-ciclo">Ciclo</label>
+                    </div>
+                    <div class="form-control flex-1 floating">
+                        <select id="mod-atribucion" class="select select-bordered select-sm w-full peer" name="atribucion" required>
                             <option value="">Seleccione</option>
                             <?php foreach ($atribuciones as $a): ?>
                                 <option value="<?= $a ?>" <?= isset($editModulo) && $editModulo['atribucion'] === $a ? 'selected' : '' ?>><?= $a ?></option>
                             <?php endforeach; ?>
                         </select>
-                    </label>
+                        <label for="mod-atribucion">Atribución</label>
+                    </div>
                 </div>
                 <button type="submit" class="btn btn-primary btn-sm">
                     <?= isset($editType) && $editType === 'modulo' ? 'Actualizar' : 'Agregar' ?>
