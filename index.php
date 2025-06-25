@@ -115,6 +115,22 @@ $profesores = $pdo->query("SELECT * FROM profesores ORDER BY especialidad ASC, n
 $modulos = $pdo->query("SELECT * FROM modulos ORDER BY ciclo ASC, curso ASC, nombre ASC")->fetchAll(PDO::FETCH_ASSOC);
 $profesoresCount = count($profesores);
 $modulosCount = count($modulos);
+
+// Colores de fondo por ciclo y curso (mismos que en asignaciones.php)
+$colorClasses = [
+    'smra1' => 'bg-red-200',
+    'smra2' => 'bg-red-400',
+    'smrb1' => 'bg-cyan-200',
+    'smrb2' => 'bg-cyan-400',
+    'smr1'  => 'bg-red-200',
+    'smr2'  => 'bg-red-400',
+    'asir1' => 'bg-indigo-200',
+    'asir2' => 'bg-indigo-400',
+    'daw1'  => 'bg-green-200',
+    'daw2'  => 'bg-green-400',
+    'dam1'  => 'bg-yellow-200',
+    'dam2'  => 'bg-yellow-400',
+];
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -268,8 +284,11 @@ $modulosCount = count($modulos);
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach ($modulos as $m): ?>
-                            <tr>
+                        <?php foreach ($modulos as $m):
+                            $cls = strtolower($m['ciclo']) . ($m['curso'] === '1º' ? '1' : '2');
+                            $bg = $colorClasses[$cls] ?? '';
+                        ?>
+                            <tr class="<?= $bg ?>">
                                 <td><?= htmlspecialchars($m['nombre']) ?></td>
                                 <td><?= htmlspecialchars($m['abreviatura']) ?></td>
                                 <td><?= $m['horas'] ?></td>
