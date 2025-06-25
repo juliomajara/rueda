@@ -141,12 +141,12 @@ $colorClasses = [
     <link href="https://cdn.jsdelivr.net/npm/daisyui@3.8.1/dist/full.css" rel="stylesheet" type="text/css" />
 </head>
 <body class="p-2 bg-gray-100">
-<div class="w-full max-w-6xl mx-auto text-xs px-4">
+<div class="w-full max-w-7xl mx-auto text-xs px-2">
     <h1 class="text-2xl font-bold mb-2">Gestión de Profesores y Módulos</h1>
     <p class="mb-2">
         <a href="asignaciones.php" class="btn btn-primary btn-sm">Ir a Asignaciones</a>
     </p>
-    <div class="grid md:grid-cols-5 gap-y-4 gap-x-4">
+    <div class="grid md:grid-cols-5 gap-y-4 gap-x-2">
         <!-- Formulario Profesor -->
         <div class="md:col-span-2 bg-white rounded-lg p-4 shadow">
             <h2 class="text-lg font-semibold mb-2">
@@ -157,11 +157,13 @@ $colorClasses = [
                 <?php if (isset($editType) && $editType === 'profesor'): ?>
                     <input type="hidden" name="id" value="<?= $editProfesor['id_profesor'] ?>">
                 <?php endif; ?>
-                <div class="relative w-full mb-3">
-                    <label for="prof-nombre" class="absolute -top-2 bg-white left-3 px-1 text-[10px] text-blue-900 font-semibold">Nombre</label>
-                    <input id="prof-nombre" class="w-full border border-gray-300 text-gray-800 rounded-md px-3 pt-3 pb-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" type="text" name="nombre" value="<?= $editProfesor['nombre'] ?? '' ?>" required>
+                <div class="flex flex-wrap gap-2">
+                    <div class="relative w-full flex-1 mb-3">
+                        <label for="prof-nombre" class="absolute -top-2 bg-white left-3 px-1 text-[10px] text-blue-900 font-semibold">Nombre</label>
+                        <input id="prof-nombre" class="w-full border border-gray-300 text-gray-800 rounded-md px-3 pt-3 pb-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" type="text" name="nombre" value="<?= $editProfesor['nombre'] ?? '' ?>" required>
+                    </div>
                 </div>
-                <div class="flex gap-2 flex-wrap">
+                <div class="flex flex-wrap gap-2">
                     <div class="relative w-full flex-1 mb-3">
                         <label for="prof-horas" class="absolute -top-2 bg-white left-3 px-1 text-[10px] text-blue-900 font-semibold">Horas totales</label>
                         <input id="prof-horas" class="w-full border border-gray-300 text-gray-800 rounded-md px-3 pt-3 pb-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" type="number" name="horas" min="0" value="<?= $editProfesor['horas'] ?? '' ?>" required>
