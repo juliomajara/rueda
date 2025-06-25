@@ -402,6 +402,7 @@ $colorClasses = [
 <div class="w-full">
     <h1 class="text-3xl font-bold mb-4">Asignaciones</h1>
     <div class="flex gap-2 mb-4">
+        <a href="index.php" class="btn">Volver a inicio</a>
         <form method="post">
             <button type="submit" name="crear" class="btn btn-primary">Crear asignación</button>
         </form>
@@ -462,8 +463,13 @@ $colorClasses = [
                             } else {
                                 $border .= 'border-double';
                             }
+                            $isFct = stripos($m['abreviatura'], 'FCT') !== false || stripos($m['nombre'], 'FCT') !== false;
+                            $style = "width: {$w}px;";
+                            if ($isFct) {
+                                $style .= " background-image: repeating-linear-gradient(45deg, rgba(0,0,0,0.15) 0, rgba(0,0,0,0.15) 10px, transparent 10px, transparent 20px);";
+                            }
                         ?>
-                            <div class="modulo <?= $bg ?> px-1 py-0.5 <?= $border ?> rounded cursor-grab text-xs text-center" style="width: <?= $w ?>px" draggable="true" data-id="<?= $m['id_modulo'] ?>" data-horas="<?= $m['horas'] ?>" data-ciclo="<?= $m['ciclo'] ?>" data-atribucion="<?= $m['atribucion'] ?>" title="<?= htmlspecialchars($m['nombre']) ?> - <?= $cursoCiclo ?>">
+                            <div class="modulo <?= $bg ?> px-1 py-0.5 <?= $border ?> rounded cursor-grab text-xs text-center" style="<?= $style ?>" draggable="true" data-id="<?= $m['id_modulo'] ?>" data-horas="<?= $m['horas'] ?>" data-ciclo="<?= $m['ciclo'] ?>" data-atribucion="<?= $m['atribucion'] ?>" title="<?= htmlspecialchars($m['nombre']) ?> - <?= $cursoCiclo ?>">
                                 <?= htmlspecialchars($m['abreviatura']) ?> (<?= $m['horas'] ?>h)
                             </div>
                         <?php endforeach; ?>
@@ -497,8 +503,13 @@ $colorClasses = [
                                     } else {
                                         $border .= 'border-double';
                                     }
+                                    $isFct = stripos($m['abreviatura'], 'FCT') !== false || stripos($m['nombre'], 'FCT') !== false;
+                                    $style = "width: {$w}px;";
+                                    if ($isFct) {
+                                        $style .= " background-image: repeating-linear-gradient(45deg, rgba(0,0,0,0.15) 0, rgba(0,0,0,0.15) 10px, transparent 10px, transparent 20px);";
+                                    }
                                 ?>
-                                    <div class="modulo <?= $bg ?> px-1 py-0.5 <?= $border ?> rounded cursor-grab text-xs text-center" style="width: <?= $w ?>px" draggable="true" data-id="<?= $m['id_modulo'] ?>" data-horas="<?= $m['horas'] ?>" data-ciclo="<?= $m['ciclo'] ?>" data-atribucion="<?= $m['atribucion'] ?>" title="<?= htmlspecialchars($m['nombre']) ?> - <?= $cursoCiclo ?>">
+                                    <div class="modulo <?= $bg ?> px-1 py-0.5 <?= $border ?> rounded cursor-grab text-xs text-center" style="<?= $style ?>" draggable="true" data-id="<?= $m['id_modulo'] ?>" data-horas="<?= $m['horas'] ?>" data-ciclo="<?= $m['ciclo'] ?>" data-atribucion="<?= $m['atribucion'] ?>" title="<?= htmlspecialchars($m['nombre']) ?> - <?= $cursoCiclo ?>">
                                         <?= htmlspecialchars($m['abreviatura']) ?> (<?= $m['horas'] ?>h)
                                     </div>
                                 <?php endforeach; ?>
