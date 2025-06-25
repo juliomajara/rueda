@@ -141,32 +141,12 @@ $colorClasses = [
     <link href="https://cdn.jsdelivr.net/npm/daisyui@3.8.1/dist/full.css" rel="stylesheet" type="text/css" />
 </head>
 <body class="p-2 bg-gray-100">
-<style>
-    .floating { position: relative; }
-    .floating input,
-    .floating select { padding-top: 1.25rem; }
-    .floating label { position: absolute; left: 0.75rem; top: 0.75rem; pointer-events: none; background: white; padding: 0 0.25rem; transition: all .2s ease; }
-    .floating input:focus + label,
-    .floating input:not(:placeholder-shown) + label,
-    .floating select:focus + label,
-    .floating select:not([value=""]) + label { transform: translateY(-0.75rem) scale(.75); color: #3b82f6; }
-</style>
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.floating select').forEach(s => {
-        if (s.value) s.setAttribute('value', s.value);
-        s.addEventListener('change', () => {
-            if (s.value) s.setAttribute('value', s.value); else s.removeAttribute('value');
-        });
-    });
-});
-</script>
-<div class="w-full text-xs">
+<div class="w-full max-w-6xl mx-auto text-xs px-4">
     <h1 class="text-2xl font-bold mb-2">Gestión de Profesores y Módulos</h1>
     <p class="mb-2">
         <a href="asignaciones.php" class="btn btn-primary btn-sm">Ir a Asignaciones</a>
     </p>
-    <div class="grid md:grid-cols-5 gap-y-4 gap-x-8">
+    <div class="grid md:grid-cols-5 gap-y-4 gap-x-4">
         <!-- Formulario Profesor -->
         <div class="md:col-span-2 bg-white rounded-lg p-4 shadow">
             <h2 class="text-lg font-semibold mb-2">
@@ -177,27 +157,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 <?php if (isset($editType) && $editType === 'profesor'): ?>
                     <input type="hidden" name="id" value="<?= $editProfesor['id_profesor'] ?>">
                 <?php endif; ?>
-                <div class="form-control floating">
-                    <input id="prof-nombre" class="input input-bordered input-sm w-full peer" type="text" name="nombre" placeholder=" " value="<?= $editProfesor['nombre'] ?? '' ?>" required>
-                    <label for="prof-nombre">Nombre</label>
+                <div class="relative w-full mb-3">
+                    <label for="prof-nombre" class="absolute -top-2 bg-white left-3 px-1 text-[10px] text-blue-900 font-semibold">Nombre</label>
+                    <input id="prof-nombre" class="w-full border border-gray-300 text-gray-800 rounded-md px-3 pt-3 pb-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" type="text" name="nombre" value="<?= $editProfesor['nombre'] ?? '' ?>" required>
                 </div>
-                <div class="flex gap-2">
-                    <div class="form-control flex-1 floating">
-                        <input id="prof-horas" class="input input-bordered input-sm w-full peer" type="number" name="horas" placeholder=" " min="0" value="<?= $editProfesor['horas'] ?? '' ?>" required>
-                        <label for="prof-horas">Horas totales</label>
+                <div class="flex gap-2 flex-wrap">
+                    <div class="relative w-full flex-1 mb-3">
+                        <label for="prof-horas" class="absolute -top-2 bg-white left-3 px-1 text-[10px] text-blue-900 font-semibold">Horas totales</label>
+                        <input id="prof-horas" class="w-full border border-gray-300 text-gray-800 rounded-md px-3 pt-3 pb-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" type="number" name="horas" min="0" value="<?= $editProfesor['horas'] ?? '' ?>" required>
                     </div>
-                    <div class="form-control flex-1 floating">
-                        <input id="prof-orden" class="input input-bordered input-sm w-full peer" type="number" name="numero_de_orden" placeholder=" " min="1" value="<?= $editProfesor['numero_de_orden'] ?? '' ?>" required>
-                        <label for="prof-orden">Número de orden</label>
+                    <div class="relative w-full flex-1 mb-3">
+                        <label for="prof-orden" class="absolute -top-2 bg-white left-3 px-1 text-[10px] text-blue-900 font-semibold">Número de orden</label>
+                        <input id="prof-orden" class="w-full border border-gray-300 text-gray-800 rounded-md px-3 pt-3 pb-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" type="number" name="numero_de_orden" min="1" value="<?= $editProfesor['numero_de_orden'] ?? '' ?>" required>
                     </div>
-                    <div class="form-control flex-1 floating">
-                        <select id="prof-especialidad" class="select select-bordered select-sm w-full peer" name="especialidad" required>
+                    <div class="relative w-full flex-1 mb-3">
+                        <label for="prof-especialidad" class="absolute -top-2 bg-white left-3 px-1 text-[10px] text-blue-900 font-semibold">Especialidad</label>
+                        <select id="prof-especialidad" class="w-full border border-gray-300 text-gray-800 rounded-md px-3 pt-3 pb-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" name="especialidad" required>
                             <option value="">Seleccione</option>
                             <?php foreach ($especialidades as $e): ?>
                                 <option value="<?= $e ?>" <?= isset($editProfesor) && $editProfesor['especialidad'] === $e ? 'selected' : '' ?>><?= $e ?></option>
                             <?php endforeach; ?>
                         </select>
-                        <label for="prof-especialidad">Especialidad</label>
                     </div>
                 </div>
                 <button type="submit" class="btn btn-primary btn-sm">
@@ -244,45 +224,45 @@ document.addEventListener('DOMContentLoaded', () => {
                     <input type="hidden" name="id" value="<?= $editModulo['id_modulo'] ?>">
                 <?php endif; ?>
                 <div class="flex flex-wrap gap-2">
-                    <div class="form-control flex-1 floating">
-                        <input id="mod-nombre" class="input input-bordered input-sm w-full peer" type="text" name="nombre" placeholder=" " value="<?= $editModulo['nombre'] ?? '' ?>" required>
-                        <label for="mod-nombre">Nombre</label>
+                    <div class="relative w-full flex-1 mb-3">
+                        <label for="mod-nombre" class="absolute -top-2 bg-white left-3 px-1 text-[10px] text-blue-900 font-semibold">Nombre</label>
+                        <input id="mod-nombre" class="w-full border border-gray-300 text-gray-800 rounded-md px-3 pt-3 pb-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" type="text" name="nombre" value="<?= $editModulo['nombre'] ?? '' ?>" required>
                     </div>
-                    <div class="form-control flex-1 floating">
-                        <input id="mod-abreviatura" class="input input-bordered input-sm w-full peer" type="text" name="abreviatura" placeholder=" " value="<?= $editModulo['abreviatura'] ?? '' ?>" required>
-                        <label for="mod-abreviatura">Abreviatura</label>
+                    <div class="relative w-full flex-1 mb-3">
+                        <label for="mod-abreviatura" class="absolute -top-2 bg-white left-3 px-1 text-[10px] text-blue-900 font-semibold">Abreviatura</label>
+                        <input id="mod-abreviatura" class="w-full border border-gray-300 text-gray-800 rounded-md px-3 pt-3 pb-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" type="text" name="abreviatura" value="<?= $editModulo['abreviatura'] ?? '' ?>" required>
                     </div>
                 </div>
                 <div class="flex flex-wrap gap-2">
-                    <div class="form-control flex-1 floating">
-                        <input id="mod-horas" class="input input-bordered input-sm w-full peer" type="number" name="horas" placeholder=" " min="1" value="<?= $editModulo['horas'] ?? '' ?>" required>
-                        <label for="mod-horas">Horas</label>
+                    <div class="relative w-full flex-1 mb-3">
+                        <label for="mod-horas" class="absolute -top-2 bg-white left-3 px-1 text-[10px] text-blue-900 font-semibold">Horas</label>
+                        <input id="mod-horas" class="w-full border border-gray-300 text-gray-800 rounded-md px-3 pt-3 pb-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" type="number" name="horas" min="1" value="<?= $editModulo['horas'] ?? '' ?>" required>
                     </div>
-                    <div class="form-control flex-1 floating">
-                        <select id="mod-curso" class="select select-bordered select-sm w-full peer" name="curso" required>
+                    <div class="relative w-full flex-1 mb-3">
+                        <label for="mod-curso" class="absolute -top-2 bg-white left-3 px-1 text-[10px] text-blue-900 font-semibold">Curso</label>
+                        <select id="mod-curso" class="w-full border border-gray-300 text-gray-800 rounded-md px-3 pt-3 pb-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" name="curso" required>
                             <option value="">Seleccione</option>
                             <option value="1º" <?= isset($editModulo) && $editModulo['curso'] === '1º' ? 'selected' : '' ?>>1º</option>
                             <option value="2º" <?= isset($editModulo) && $editModulo['curso'] === '2º' ? 'selected' : '' ?>>2º</option>
                         </select>
-                        <label for="mod-curso">Curso</label>
                     </div>
-                    <div class="form-control flex-1 floating">
-                        <select id="mod-ciclo" class="select select-bordered select-sm w-full peer" name="ciclo" required>
+                    <div class="relative w-full flex-1 mb-3">
+                        <label for="mod-ciclo" class="absolute -top-2 bg-white left-3 px-1 text-[10px] text-blue-900 font-semibold">Ciclo</label>
+                        <select id="mod-ciclo" class="w-full border border-gray-300 text-gray-800 rounded-md px-3 pt-3 pb-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" name="ciclo" required>
                             <option value="">Seleccione</option>
                             <?php foreach ($ciclos as $c): ?>
                                 <option value="<?= $c ?>" <?= isset($editModulo) && $editModulo['ciclo'] === $c ? 'selected' : '' ?>><?= $c ?></option>
                             <?php endforeach; ?>
                         </select>
-                        <label for="mod-ciclo">Ciclo</label>
                     </div>
-                    <div class="form-control flex-1 floating">
-                        <select id="mod-atribucion" class="select select-bordered select-sm w-full peer" name="atribucion" required>
+                    <div class="relative w-full flex-1 mb-3">
+                        <label for="mod-atribucion" class="absolute -top-2 bg-white left-3 px-1 text-[10px] text-blue-900 font-semibold">Atribución</label>
+                        <select id="mod-atribucion" class="w-full border border-gray-300 text-gray-800 rounded-md px-3 pt-3 pb-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" name="atribucion" required>
                             <option value="">Seleccione</option>
                             <?php foreach ($atribuciones as $a): ?>
                                 <option value="<?= $a ?>" <?= isset($editModulo) && $editModulo['atribucion'] === $a ? 'selected' : '' ?>><?= $a ?></option>
                             <?php endforeach; ?>
                         </select>
-                        <label for="mod-atribucion">Atribución</label>
                     </div>
                 </div>
                 <button type="submit" class="btn btn-primary btn-sm">
@@ -291,7 +271,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </form>
             <h3 class="text-base font-semibold mt-4 mb-2">Listado de Módulos (<?= $modulosCount ?>)</h3>
             <div class="overflow-x-auto">
-                <table class="table table-zebra table-xs text-xs">
+                <table class="table table-xs text-xs">
                     <thead>
                         <tr>
                             <th>Nombre</th>
