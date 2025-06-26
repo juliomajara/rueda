@@ -441,9 +441,12 @@ $colorClasses = [
                 <h2 class="text-xl font-semibold mb-2">Horas por asignar: <span id="horasPorAsignar"><?= $horasPorAsignar ?></span>h (Inf <span id="porAsignarInf"><?= $horasPorAsignarInf ?></span>h, SAI <span id="porAsignarSai"><?= $horasPorAsignarSai ?></span>h)</h2>
                 <?php foreach ($datos as $d): ?>
                     <?php
-                        $dropStyle = $d['profesor']['especialidad'] === 'Informática' ? 'border-solid' : 'border-dotted';
+                        // Bordes sólidos y más estrechos para todos los profesores.
+                        $dropBorder = 'border-2 border-black border-solid';
+                        // Fondo un poco más oscuro para los de Informática.
+                        $dropBg = $d['profesor']['especialidad'] === 'Informática' ? 'bg-gray-300' : 'bg-gray-200';
                     ?>
-                    <div class="dropzone p-2 border-4 border-black <?= $dropStyle ?> rounded-box bg-base-200 mb-2 flex flex-wrap gap-1 min-h-20" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>" data-horas-meta="<?= $d['profesor']['horas'] ?>" data-especialidad="<?= $d['profesor']['especialidad'] ?>">
+                    <div class="dropzone p-2 <?= $dropBorder ?> <?= $dropBg ?> rounded-box mb-2 flex flex-wrap gap-1 min-h-20" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>" data-horas-meta="<?= $d['profesor']['horas'] ?>" data-especialidad="<?= $d['profesor']['especialidad'] ?>">
                         <span class="w-full text-center font-bold mb-2">
                             <?= htmlspecialchars($d['profesor']['nombre']) ?> (
                             <span class="total" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>"><?= $d['total'] ?></span>/
@@ -457,7 +460,7 @@ $colorClasses = [
                             $bg = $colorClasses[$cls] ?? 'bg-gray-200';
                             $border = 'border-4 border-black ';
                             if ($m['atribucion'] === 'SAI') {
-                                $border .= 'border-dotted';
+                                $border .= 'border-dashed';
                             } elseif ($m['atribucion'] === 'Informática') {
                                 $border .= 'border-solid';
                             } else {
@@ -497,7 +500,7 @@ $colorClasses = [
                                     $bg = $colorClasses[$cls] ?? 'bg-gray-200';
                                     $border = 'border-4 border-black ';
                                     if ($m['atribucion'] === 'SAI') {
-                                        $border .= 'border-dotted';
+                                        $border .= 'border-dashed';
                                     } elseif ($m['atribucion'] === 'Informática') {
                                         $border .= 'border-solid';
                                     } else {
