@@ -417,6 +417,7 @@ $colorClasses = [
                 <button type="submit" name="completar" class="btn btn-accent">Completar asignación</button>
             </form>
         <?php endif; ?>
+        <button type="button" id="toggleSinAsignar" class="btn">Ocultar/Mostrar módulos sin asignar</button>
     </div>
 
     <?php if ($conjuntos): ?>
@@ -436,9 +437,10 @@ $colorClasses = [
     <?php if ($seleccionado !== null): ?>
         <input type="hidden" id="conjuntoActual" value="<?= $seleccionado ?>">
     <?php endif; ?>
-        <div class="grid grid-cols-2 gap-2">
-            <div>
+        <div id="mainGrid" class="grid grid-cols-2 gap-2">
+            <div id="profesores">
                 <h2 class="text-xl font-semibold mb-2">Horas por asignar: <span id="horasPorAsignar"><?= $horasPorAsignar ?></span>h (Inf <span id="porAsignarInf"><?= $horasPorAsignarInf ?></span>h, SAI <span id="porAsignarSai"><?= $horasPorAsignarSai ?></span>h)</h2>
+                <div id="profesoresList">
                 <?php foreach ($datos as $d): ?>
                     <?php
                         // Bordes sólidos y más estrechos para todos los profesores.
@@ -519,8 +521,9 @@ $colorClasses = [
                         <?php endforeach; ?>
                     </div>
                 <?php endforeach; ?>
+                </div>
             </div>
-            <div class="space-y-2 sticky top-0 max-h-screen overflow-y-auto">
+            <div id="sinAsignar" class="space-y-2 sticky top-0 max-h-screen overflow-y-auto">
                 <h2 class="text-xl font-semibold mb-2">Módulos sin asignar: <span id="totalSinAsignar"><?= $totalDisponibles ?></span>h (Inf <span id="sinInf"><?= $totalDisponiblesInf ?></span>h, SAI <span id="sinSai"><?= $totalDisponiblesSai ?></span>h)</h2>
                 <?php
                     $ciclos = ['SMRA','SMRB','ASIR','DAM','DAW'];
@@ -570,6 +573,39 @@ $colorClasses = [
     document.addEventListener('DOMContentLoaded', () => {
         const conjuntoInput = document.getElementById('conjuntoActual');
         const conjuntoValor = conjuntoInput ? conjuntoInput.value : null;
+        const toggleBtn = document.getElementById('toggleSinAsignar');
+        const sinAsignarDiv = document.getElementById('sinAsignar');
+        const profList = document.getElementById('profesoresList');
+
+        if (toggleBtn && sinAsignarDiv && profList) {
+            toggleBtn.addEventListener('click', () => {
+                const hidden = sinAsignarDiv.classList.toggle('hidden');
+                if (hidden) {
+                    const drops = Array.from(profList.querySelectorAll('.dropzone'));
+                    const half = Math.ceil(drops.length / 2);
+                    const col1 = document.createElement('div');
+                    const col2 = document.createElement('div');
+                    col1.id = 'profCol1';
+                    col2.id = 'profCol2';
+                    col1.className = 'space-y-2';
+                    col2.className = 'space-y-2';
+                    profList.innerHTML = '';
+                    drops.forEach((d, i) => (i < half ? col1 : col2).appendChild(d));
+                    profList.classList.add('grid', 'grid-cols-2', 'gap-2');
+                    profList.appendChild(col1);
+                    profList.appendChild(col2);
+                } else {
+                    const col1 = document.getElementById('profCol1');
+                    const col2 = document.getElementById('profCol2');
+                    if (col1 && col2) {
+                        const all = [...col1.children, ...col2.children];
+                        profList.innerHTML = '';
+                        all.forEach(d => profList.appendChild(d));
+                    }
+                    profList.classList.remove('grid', 'grid-cols-2', 'gap-2');
+                }
+            });
+        }
 
         function updateTotals() {
             let sinAsignar = 0;
