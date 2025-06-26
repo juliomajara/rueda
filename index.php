@@ -17,7 +17,7 @@ $ciclos = [];
 $stmt = $pdo->query("SHOW COLUMNS FROM modulos LIKE 'ciclo'");
 $col = $stmt->fetch(PDO::FETCH_ASSOC);
 if ($col && isset($col['Type']) && preg_match("/^enum\((.*)\)$/", $col['Type'], $m)) {
-    $ciclos = array_map(fn($v) => trim($v, "' "), explode(',', $m[1]));
+    $ciclos = array_map(function ($v) { return trim($v, "' "); }, explode(',', $m[1]));
 }
 
 // Posibles valores para especialidad de profesores
@@ -25,7 +25,7 @@ $especialidades = [];
 $stmt = $pdo->query("SHOW COLUMNS FROM profesores LIKE 'especialidad'");
 $col = $stmt->fetch(PDO::FETCH_ASSOC);
 if ($col && isset($col['Type']) && preg_match("/^enum\((.*)\)$/", $col['Type'], $m)) {
-    $especialidades = array_map(fn($v) => trim($v, "' "), explode(',', $m[1]));
+    $especialidades = array_map(function ($v) { return trim($v, "' "); }, explode(',', $m[1]));
 }
 
 // Posibles valores para atribución de módulos
@@ -33,7 +33,7 @@ $atribuciones = [];
 $stmt = $pdo->query("SHOW COLUMNS FROM modulos LIKE 'atribucion'");
 $col = $stmt->fetch(PDO::FETCH_ASSOC);
 if ($col && isset($col['Type']) && preg_match("/^enum\((.*)\)$/", $col['Type'], $m)) {
-    $atribuciones = array_map(fn($v) => trim($v, "' "), explode(',', $m[1]));
+    $atribuciones = array_map(function ($v) { return trim($v, "' "); }, explode(',', $m[1]));
 }
 
 // ELIMINAR
