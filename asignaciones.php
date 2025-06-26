@@ -228,11 +228,23 @@ if (
             $m['__fct'] = $esFct;
             $target =& $ambNorm; // default
             if ($m['atribucion'] === 'SAI') {
-                $target =& ($esFct ? $saiFct : $saiNorm);
+                if ($esFct) {
+                    $target =& $saiFct;
+                } else {
+                    $target =& $saiNorm;
+                }
             } elseif ($m['atribucion'] === 'Informática') {
-                $target =& ($esFct ? $infFct : $infNorm);
+                if ($esFct) {
+                    $target =& $infFct;
+                } else {
+                    $target =& $infNorm;
+                }
             } else { // Ambos
-                $target =& ($esFct ? $ambFct : $ambNorm);
+                if ($esFct) {
+                    $target =& $ambFct;
+                } else {
+                    $target =& $ambNorm;
+                }
             }
             $target[] = $m;
         }
