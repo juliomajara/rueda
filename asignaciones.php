@@ -294,18 +294,22 @@ if (
 $conjuntos = $pdo->query(
     "SELECT DISTINCT conjunto_asignaciones FROM asignaciones ORDER BY conjunto_asignaciones"
 )->fetchAll(PDO::FETCH_COLUMN);
-$seleccionado = isset($_GET["conjunto"]) ? (int)$_GET["conjunto"] : null;
-// Si se accede sin conjunto especificado, obtener el siguiente número disponible
-// para comenzar una asignación vacía
+
+$seleccionado = isset($_GET['conjunto']) ? (int)$_GET['conjunto'] : null;
+
+// Si se accede sin conjunto especificado, redirigir al siguiente número libre
 if ($seleccionado === null) {
-    $seleccionado = (int)$pdo
+    $nuevo = (int)$pdo
         ->query("SELECT IFNULL(MAX(conjunto_asignaciones), 0) + 1 FROM asignaciones")
         ->fetchColumn();
-    // Añadir el nuevo conjunto a la lista para que se muestre como disponible
-    if (!in_array($seleccionado, $conjuntos, true)) {
-        $conjuntos[] = $seleccionado;
-        sort($conjuntos);
-    }
+    header('Location: asignaciones.php?conjunto=' . $nuevo);
+    exit;
+}
+
+// Añadir el conjunto actual a la lista si aún no existe para que se muestre
+if (!in_array($seleccionado, $conjuntos, true)) {
+    $conjuntos[] = $seleccionado;
+    sort($conjuntos);
 }
 
 
