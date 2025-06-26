@@ -440,7 +440,7 @@ $colorClasses = [
         <div id="mainGrid" class="grid grid-cols-2 gap-2">
             <div id="profesores">
                 <h2 class="text-xl font-semibold mb-2">Horas por asignar: <span id="horasPorAsignar"><?= $horasPorAsignar ?></span>h (Inf <span id="porAsignarInf"><?= $horasPorAsignarInf ?></span>h, SAI <span id="porAsignarSai"><?= $horasPorAsignarSai ?></span>h)</h2>
-                <div id="profesoresList">
+                <div id="profesoresList" class="grid grid-cols-1 gap-2">
                 <?php foreach ($datos as $d): ?>
                     <?php
                         // Bordes sólidos y más estrechos para todos los profesores.
@@ -448,7 +448,7 @@ $colorClasses = [
                         // Fondo un poco más oscuro para los de Informática.
                         $dropBg = $d['profesor']['especialidad'] === 'Informática' ? 'bg-gray-300' : 'bg-gray-200';
                     ?>
-                    <div class="dropzone p-2 <?= $dropBorder ?> <?= $dropBg ?> rounded-box mb-2 flex flex-wrap gap-1 min-h-20" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>" data-horas-meta="<?= $d['profesor']['horas'] ?>" data-especialidad="<?= $d['profesor']['especialidad'] ?>">
+                    <div class="dropzone w-full p-2 <?= $dropBorder ?> <?= $dropBg ?> rounded-box mb-2 flex flex-wrap gap-1 min-h-20" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>" data-horas-meta="<?= $d['profesor']['horas'] ?>" data-especialidad="<?= $d['profesor']['especialidad'] ?>">
                         <span class="w-full text-center font-bold mb-2">
                             <?= htmlspecialchars($d['profesor']['nombre']) ?> (
                             <span class="total" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>"><?= $d['total'] ?></span>/
@@ -534,7 +534,7 @@ $colorClasses = [
                 ?>
                 <div class="space-y-2">
                     <?php foreach ($ciclos as $c): ?>
-                        <div class="dropzone p-2 border border-dashed rounded-box bg-base-200 flex flex-wrap gap-1 mb-2 min-h-20" data-profesor-id="0" data-ciclo="<?= $c ?>">
+                        <div class="dropzone w-full p-2 border border-dashed rounded-box bg-base-200 flex flex-wrap gap-1 mb-2 min-h-20" data-profesor-id="0" data-ciclo="<?= $c ?>">
                             <span class="w-full text-center font-bold mb-1"><?= $c ?></span>
                             <?php if (!empty($grupos[$c])): ?>
                                 <?php foreach ($grupos[$c] as $m):
@@ -586,10 +586,18 @@ $colorClasses = [
                         mainGrid.classList.remove('grid-cols-2');
                         mainGrid.classList.add('grid-cols-1');
                     }
+                    if (profList) {
+                        profList.classList.remove('grid-cols-1');
+                        profList.classList.add('grid-cols-2');
+                    }
                 } else {
                     if (mainGrid) {
                         mainGrid.classList.remove('grid-cols-1');
                         mainGrid.classList.add('grid-cols-2');
+                    }
+                    if (profList) {
+                        profList.classList.remove('grid-cols-2');
+                        profList.classList.add('grid-cols-1');
                     }
                 }
             });
