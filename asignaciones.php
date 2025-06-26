@@ -237,7 +237,9 @@ if (
             $target[] = $m;
         }
 
-        $sortHoras = fn($a, $b) => $b['horas'] <=> $a['horas'];
+        $sortHoras = function ($a, $b) {
+            return $b['horas'] <=> $a['horas'];
+        };
         foreach ([$saiNorm, $saiFct, $infNorm, $infFct, $ambNorm, $ambFct] as &$arr) {
             usort($arr, $sortHoras);
         }
@@ -316,20 +318,20 @@ if (
         };
 
         // 1. Módulos SAI a profesores SAI
-        $asignarLista($saiNorm, fn($p) => $p['especialidad'] === 'SAI');
-        $asignarLista($saiFct, fn($p) => $p['especialidad'] === 'SAI');
+        $asignarLista($saiNorm, function ($p) { return $p['especialidad'] === 'SAI'; });
+        $asignarLista($saiFct, function ($p) { return $p['especialidad'] === 'SAI'; });
 
         // 2. Módulos Informática a profesores de Informática
-        $asignarLista($infNorm, fn($p) => $p['especialidad'] === 'Informática');
-        $asignarLista($infFct, fn($p) => $p['especialidad'] === 'Informática');
+        $asignarLista($infNorm, function ($p) { return $p['especialidad'] === 'Informática'; });
+        $asignarLista($infFct, function ($p) { return $p['especialidad'] === 'Informática'; });
 
         // 3. Completar SAI con módulos "Ambos"
-        $asignarLista($ambNorm, fn($p) => $p['especialidad'] === 'SAI');
-        $asignarLista($ambFct, fn($p) => $p['especialidad'] === 'SAI');
+        $asignarLista($ambNorm, function ($p) { return $p['especialidad'] === 'SAI'; });
+        $asignarLista($ambFct, function ($p) { return $p['especialidad'] === 'SAI'; });
 
         // 4. Restantes módulos SAI y "Ambos" a Informática
         $restantes = array_merge($saiNorm, $saiFct, $ambNorm, $ambFct);
-        $asignarLista($restantes, fn($p) => $p['especialidad'] === 'Informática');
+        $asignarLista($restantes, function ($p) { return $p['especialidad'] === 'Informática'; });
 
         $pdo->commit();
     } catch (Exception $e) {
