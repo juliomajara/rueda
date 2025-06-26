@@ -141,14 +141,14 @@ $colorClasses = [
     <link href="https://cdn.jsdelivr.net/npm/daisyui@3.8.1/dist/full.css" rel="stylesheet" type="text/css" />
 </head>
 <body class="p-2 bg-gray-100">
-<div class="w-full max-w-7xl mx-auto text-xs px-2">
-    <h1 class="text-2xl font-bold mb-2">Gestión de Profesores y Módulos</h1>
-    <p class="mb-2">
-        <a href="asignaciones.php" class="btn btn-primary btn-sm">Ir a Asignaciones</a>
-    </p>
-    <div class="grid md:grid-cols-5 gap-y-4 gap-x-2">
+<div class="w-full max-w-full mx-auto text-xs px-2">
+    <div class="relative flex items-center justify-center mb-4">
+        <h1 class="text-2xl font-bold">Gestión de Profesores y Módulos</h1>
+        <a href="asignaciones.php" class="btn btn-primary btn-sm absolute right-0">Ir a Asignaciones</a>
+    </div>
+    <div class="grid md:grid-cols-7 gap-y-6 gap-x-4">
         <!-- Formulario Profesor -->
-        <div class="md:col-span-2 bg-white rounded-lg p-4 shadow">
+        <div class="md:col-span-3 bg-white rounded-lg p-4 shadow">
             <h2 class="text-lg font-semibold mb-2">
                 <?= isset($editType) && $editType === 'profesor' ? 'Editar Profesor' : 'Nuevo Profesor' ?>
             </h2>
@@ -216,7 +216,7 @@ $colorClasses = [
             </div>
         </div>
         <!-- Formulario Módulo -->
-        <div class="md:col-span-3 bg-white rounded-lg p-4 shadow">
+        <div class="md:col-span-4 bg-white rounded-lg p-4 shadow">
             <h2 class="text-lg font-semibold mb-2">
                 <?= isset($editType) && $editType === 'modulo' ? 'Editar Módulo' : 'Nuevo Módulo' ?>
             </h2>
