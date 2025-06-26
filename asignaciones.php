@@ -450,7 +450,25 @@ $colorClasses = [
                         <span class="w-full text-center font-bold mb-2">
                             <?= htmlspecialchars($d['profesor']['nombre']) ?> (
                             <span class="total" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>"><?= $d['total'] ?></span>/
-                            <span class="faltan <?= $d['diferencia'] > 0 ? 'text-red-600' : '' ?>" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>"><?= ($d['diferencia'] >= 0 ? '-' : '+') . abs($d['diferencia']) ?></span>) -
+                            <?php
+                                $diff = $d['diferencia'];
+                                $faltanClass = 'text-black';
+                                $showWarn = false;
+                                if ($diff > 0) {
+                                    $faltanClass = 'text-red-600';
+                                    $showWarn = true;
+                                } elseif ($diff < 0) {
+                                    if ($diff >= -2) {
+                                        $faltanClass = 'text-orange-500';
+                                    } else {
+                                        $faltanClass = 'text-red-600';
+                                        $showWarn = true;
+                                    }
+                                }
+                            ?>
+                            <span class="faltan <?= $faltanClass ?>" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>"><?= ($diff >= 0 ? '-' : '+') . abs($diff) ?></span>
+                            <img src="images/warning.svg" alt="Advertencia" class="warning-icon inline-block w-4 h-4 ml-1 <?= $showWarn ? '' : 'hidden' ?>">
+                            ) -
                             <?= $d['profesor']['especialidad'] ?>
                         </span>
                         <?php foreach ($d['modulos'] as $m):
@@ -558,13 +576,26 @@ $colorClasses = [
                         const meta = parseInt(z.dataset.horasMeta, 10);
                         const diff = meta - total;
                         faltanElem.textContent = `${diff >= 0 ? '-' : '+'}${Math.abs(diff)}`;
-                        if (diff === 0) faltanElem.classList.remove('text-red-600');
-                        else if (diff > 0) faltanElem.classList.add('text-red-600');
-                        else faltanElem.classList.remove('text-red-600');
-                        if (diff > 0) {
+                        const warnImg = faltanElem.nextElementSibling;
+
+                        // reset classes
+                        faltanElem.classList.remove('text-red-600', 'text-orange-500', 'text-black');
+
+                        if (diff === 0) {
+                            faltanElem.classList.add('text-black');
+                            if (warnImg) warnImg.classList.add('hidden');
+                        } else if (diff > 0) {
+                            faltanElem.classList.add('text-red-600');
+                            if (warnImg) warnImg.classList.remove('hidden');
                             faltanTotal += diff;
                             if (z.dataset.especialidad === 'Informática') faltanInf += diff;
                             else if (z.dataset.especialidad === 'SAI') faltanSai += diff;
+                        } else if (diff >= -2) {
+                            faltanElem.classList.add('text-orange-500');
+                            if (warnImg) warnImg.classList.add('hidden');
+                        } else {
+                            faltanElem.classList.add('text-red-600');
+                            if (warnImg) warnImg.classList.remove('hidden');
                         }
                     }
                 }
