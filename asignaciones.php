@@ -452,24 +452,48 @@ $colorClasses = [
                             <span class="total" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>"><?= $d['total'] ?></span>/
                             <?php
                                 $diff = $d['diferencia'];
-                                $faltanClass = 'text-black';
-                                $showWarn = false;
+                                $warningText = '';
                                 if ($diff > 0) {
-                                    $faltanClass = 'text-red-600';
-                                    $showWarn = true;
+                                    $warningText = 'Faltan horas por asignar';
                                 } elseif ($diff < 0) {
-                                    if ($diff >= -2) {
-                                        $faltanClass = 'text-orange-500';
-                                    } else {
-                                        $faltanClass = 'text-red-600';
-                                        $showWarn = true;
+                                    $warningText = 'Demasiadas horas asignadas';
+                                } elseif ($d['profesor']['especialidad'] === 'SAI') {
+                                    foreach ($d['modulos'] as $w) {
+                                        if ($w['atribucion'] === 'Informática') {
+                                            $warningText = 'Tiene asignados módulos de Informática';
+                                            break;
+                                        }
+                                    }
+                                }
+                                if ($warningText === '') {
+                                    foreach ($d['modulos'] as $w) {
+                                        $isFct = stripos($w['abreviatura'], 'FCT') !== false || stripos($w['nombre'], 'FCT') !== false ||
+                                                 stripos($w['abreviatura'], 'FFE') !== false || stripos($w['nombre'], 'FFE') !== false;
+                                        if ($isFct) {
+                                            $hasOther = false;
+                                            foreach ($d['modulos'] as $o) {
+                                                $otherFct = stripos($o['abreviatura'], 'FCT') !== false || stripos($o['nombre'], 'FCT') !== false ||
+                                                             stripos($o['abreviatura'], 'FFE') !== false || stripos($o['nombre'], 'FFE') !== false;
+                                                if (!$otherFct && $o['ciclo'] === $w['ciclo'] && $o['curso'] === '2º') {
+                                                    $hasOther = true;
+                                                    break;
+                                                }
+                                            }
+                                            if (!$hasOther) {
+                                                $warningText = 'Tiene asignado FCT/FFE sin dar clase a este curso';
+                                                break;
+                                            }
+                                        }
                                     }
                                 }
                             ?>
-                            <span class="faltan <?= $faltanClass ?>" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>"><?= ($diff >= 0 ? '-' : '+') . abs($diff) ?></span>
-                            <img src="images/warning.svg" alt="Advertencia" class="warning-icon inline-block w-4 h-4 ml-1 <?= $showWarn ? '' : 'hidden' ?>">
-                            ) -
-                            <?= $d['profesor']['especialidad'] ?>
+                            <span class="faltan text-black" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>"><?= ($diff >= 0 ? '-' : '+') . abs($diff) ?></span>
+                            )
+                            <span class="warning ml-1 inline-flex items-center <?= $warningText ? '' : 'hidden' ?>" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>">
+                                <img src="images/warning.svg" alt="Advertencia" class="w-4 h-4">
+                                <span class="warning-text ml-1 text-xs"><?= $warningText ?></span>
+                            </span>
+                            - <?= $d['profesor']['especialidad'] ?>
                         </span>
                         <?php foreach ($d['modulos'] as $m):
                             $cls = strtolower($m['ciclo']) . ($m['curso'] === '1º' ? '1' : '2');
@@ -484,13 +508,13 @@ $colorClasses = [
                             } else {
                                 $border .= 'border-double';
                             }
-                            $isFct = stripos($m['abreviatura'], 'FCT') !== false || stripos($m['nombre'], 'FCT') !== false;
+                            $isFct = stripos($m['abreviatura'], 'FCT') !== false || stripos($m['nombre'], 'FCT') !== false || stripos($m['abreviatura'], 'FFE') !== false || stripos($m['nombre'], 'FFE') !== false;
                             $style = "width: {$w}px;";
                             if ($isFct) {
                                 $style .= " background-image: repeating-linear-gradient(45deg, rgba(0,0,0,0.15) 0, rgba(0,0,0,0.15) 10px, transparent 10px, transparent 20px);";
                             }
                         ?>
-                            <div class="modulo <?= $bg ?> px-1 py-0.5 <?= $border ?> rounded cursor-grab text-xs text-center" style="<?= $style ?>" draggable="true" data-id="<?= $m['id_modulo'] ?>" data-horas="<?= $m['horas'] ?>" data-ciclo="<?= $m['ciclo'] ?>" data-atribucion="<?= $m['atribucion'] ?>" title="<?= htmlspecialchars($m['nombre']) ?> - <?= $cursoCiclo ?>">
+                            <div class="modulo <?= $bg ?> px-1 py-0.5 <?= $border ?> rounded cursor-grab text-xs text-center" style="<?= $style ?>" draggable="true" data-id="<?= $m['id_modulo'] ?>" data-horas="<?= $m['horas'] ?>" data-ciclo="<?= $m['ciclo'] ?>" data-curso="<?= $m['curso'] ?>" data-atribucion="<?= $m['atribucion'] ?>" data-fct="<?= $isFct ? 1 : 0 ?>" title="<?= htmlspecialchars($m['nombre']) ?> - <?= $cursoCiclo ?>">
                                 <?= htmlspecialchars($m['abreviatura']) ?> (<?= $m['horas'] ?>h)
                             </div>
                         <?php endforeach; ?>
@@ -524,13 +548,13 @@ $colorClasses = [
                                     } else {
                                         $border .= 'border-double';
                                     }
-                                    $isFct = stripos($m['abreviatura'], 'FCT') !== false || stripos($m['nombre'], 'FCT') !== false;
+                                    $isFct = stripos($m['abreviatura'], 'FCT') !== false || stripos($m['nombre'], 'FCT') !== false || stripos($m['abreviatura'], 'FFE') !== false || stripos($m['nombre'], 'FFE') !== false;
                                     $style = "width: {$w}px;";
                                     if ($isFct) {
                                         $style .= " background-image: repeating-linear-gradient(45deg, rgba(0,0,0,0.15) 0, rgba(0,0,0,0.15) 10px, transparent 10px, transparent 20px);";
                                     }
                                 ?>
-                                    <div class="modulo <?= $bg ?> px-1 py-0.5 <?= $border ?> rounded cursor-grab text-xs text-center" style="<?= $style ?>" draggable="true" data-id="<?= $m['id_modulo'] ?>" data-horas="<?= $m['horas'] ?>" data-ciclo="<?= $m['ciclo'] ?>" data-atribucion="<?= $m['atribucion'] ?>" title="<?= htmlspecialchars($m['nombre']) ?> - <?= $cursoCiclo ?>">
+                                    <div class="modulo <?= $bg ?> px-1 py-0.5 <?= $border ?> rounded cursor-grab text-xs text-center" style="<?= $style ?>" draggable="true" data-id="<?= $m['id_modulo'] ?>" data-horas="<?= $m['horas'] ?>" data-ciclo="<?= $m['ciclo'] ?>" data-curso="<?= $m['curso'] ?>" data-atribucion="<?= $m['atribucion'] ?>" data-fct="<?= $isFct ? 1 : 0 ?>" title="<?= htmlspecialchars($m['nombre']) ?> - <?= $cursoCiclo ?>">
                                         <?= htmlspecialchars($m['abreviatura']) ?> (<?= $m['horas'] ?>h)
                                     </div>
                                 <?php endforeach; ?>
@@ -558,7 +582,8 @@ $colorClasses = [
             document.querySelectorAll('.dropzone').forEach(z => {
                 const profId = z.dataset.profesorId;
                 let total = 0;
-                z.querySelectorAll('.modulo').forEach(m => {
+                const mods = Array.from(z.querySelectorAll('.modulo'));
+                mods.forEach(m => {
                     const horas = parseInt(m.dataset.horas, 10);
                     total += horas;
                     if (profId === '0') {
@@ -571,31 +596,46 @@ $colorClasses = [
                 } else {
                     const totalElem = document.querySelector(`.total[data-profesor-id="${profId}"]`);
                     const faltanElem = document.querySelector(`.faltan[data-profesor-id="${profId}"]`);
+                    const warnCont = document.querySelector(`.warning[data-profesor-id="${profId}"]`);
                     if (totalElem) totalElem.textContent = total;
                     if (faltanElem) {
                         const meta = parseInt(z.dataset.horasMeta, 10);
                         const diff = meta - total;
                         faltanElem.textContent = `${diff >= 0 ? '-' : '+'}${Math.abs(diff)}`;
-                        const warnImg = faltanElem.nextElementSibling;
 
-                        // reset classes
-                        faltanElem.classList.remove('text-red-600', 'text-orange-500', 'text-black');
-
-                        if (diff === 0) {
-                            faltanElem.classList.add('text-black');
-                            if (warnImg) warnImg.classList.add('hidden');
-                        } else if (diff > 0) {
-                            faltanElem.classList.add('text-red-600');
-                            if (warnImg) warnImg.classList.remove('hidden');
+                        let warningMsg = '';
+                        if (diff > 0) {
+                            warningMsg = 'Faltan horas por asignar';
                             faltanTotal += diff;
                             if (z.dataset.especialidad === 'Informática') faltanInf += diff;
                             else if (z.dataset.especialidad === 'SAI') faltanSai += diff;
-                        } else if (diff >= -2) {
-                            faltanElem.classList.add('text-orange-500');
-                            if (warnImg) warnImg.classList.add('hidden');
+                        } else if (diff < 0) {
+                            warningMsg = 'Demasiadas horas asignadas';
+                        } else if (z.dataset.especialidad === 'SAI' && mods.some(m => m.dataset.atribucion === 'Informática')) {
+                            warningMsg = 'Tiene asignados módulos de Informática';
                         } else {
-                            faltanElem.classList.add('text-red-600');
-                            if (warnImg) warnImg.classList.remove('hidden');
+                            const tieneFct = mods.some(m => m.dataset.fct === '1');
+                            if (tieneFct) {
+                                let problema = false;
+                                mods.forEach(m => {
+                                    if (m.dataset.fct === '1') {
+                                        const hayOtro = mods.some(o => o.dataset.fct !== '1' && o.dataset.ciclo === m.dataset.ciclo && o.dataset.curso === '2º');
+                                        if (!hayOtro) problema = true;
+                                    }
+                                });
+                                if (problema) warningMsg = 'Tiene asignado FCT/FFE sin dar clase a este curso';
+                            }
+                        }
+
+                        if (warnCont) {
+                            const txt = warnCont.querySelector('.warning-text');
+                            if (warningMsg) {
+                                txt.textContent = warningMsg;
+                                warnCont.classList.remove('hidden');
+                            } else {
+                                txt.textContent = '';
+                                warnCont.classList.add('hidden');
+                            }
                         }
                     }
                 }
