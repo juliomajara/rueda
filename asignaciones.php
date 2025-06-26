@@ -46,100 +46,11 @@ if (isset($_GET['eliminar_asignacion'])) {
     exit;
 }
 
-// Crear asignaciones al presionar el boton
+// Crear un nuevo conjunto de asignaciones vacío al presionar el botón
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crear'])) {
-    try {
-        $pdo->beginTransaction();
-        // Nuevo identificador de conjunto
-        $nuevoConjunto = (int)$pdo->query(
-            "SELECT IFNULL(MAX(conjunto_asignaciones), 0) + 1 FROM asignaciones"
-        )->fetchColumn();
-
-        // Obtener profesores completos (horas y especialidad)
-        $profesores = $pdo->query(
-            "SELECT * FROM profesores ORDER BY CASE especialidad WHEN 'Informática' THEN 1 WHEN 'SAI' THEN 2 ELSE 3 END, numero_de_orden"
-        )->fetchAll(PDO::FETCH_ASSOC);
-        $modulos = $pdo->query("SELECT * FROM modulos ORDER BY horas DESC")->fetchAll(PDO::FETCH_ASSOC);
-
-        // Preparar estructuras de control
-        $horasAsignadas = [];
-        $fctAsignadas = [];
-        $cicloCurso = [];
-        foreach ($profesores as $p) {
-            $horasAsignadas[$p['id_profesor']] = 0;
-            $fctAsignadas[$p['id_profesor']] = 0;
-            $cicloCurso[$p['id_profesor']] = [];
-        }
-
-        // Separar modulos FCT de los demás
-        $modulosFct = [];
-        $modulosNormales = [];
-        foreach ($modulos as $m) {
-            $esFct = stripos($m['abreviatura'], 'FCT') !== false || stripos($m['nombre'], 'FCT') !== false;
-            if ($esFct) {
-                $m['__fct'] = true;
-                $modulosFct[] = $m;
-            } else {
-                $m['__fct'] = false;
-                $modulosNormales[] = $m;
-            }
-        }
-        $modulosOrdenados = array_merge($modulosNormales, $modulosFct);
-
-        foreach ($modulosOrdenados as $mod) {
-            $mejor = null;
-            $mejorScore = PHP_INT_MAX;
-            foreach ($profesores as $prof) {
-                $pid = $prof['id_profesor'];
-
-                // Restricciones de especialidad
-                if ($prof['especialidad'] === 'SAI' && $mod['atribucion'] === 'Informática') {
-                    continue;
-                }
-
-                // Restricciones FCT
-                if ($mod['__fct']) {
-                    if ($fctAsignadas[$pid] >= 1) {
-                        continue;
-                    }
-                    $cc = $cicloCurso[$pid][$mod['ciclo']][$mod['curso']] ?? false;
-                    if (!$cc) {
-                        continue;
-                    }
-                }
-
-                $nuevoTotal = $horasAsignadas[$pid] + $mod['horas'];
-                if ($nuevoTotal > $prof['horas'] + 2) {
-                    continue;
-                }
-
-                $score = abs($prof['horas'] - $nuevoTotal);
-                $bestHoras = $mejor ? $horasAsignadas[$mejor['id_profesor']] : PHP_INT_MAX;
-                if ($score < $mejorScore || ($score === $mejorScore && $horasAsignadas[$pid] < $bestHoras)) {
-                    $mejor = $prof;
-                    $mejorScore = $score;
-                }
-            }
-
-            if ($mejor !== null) {
-                $stmt = $pdo->prepare(
-                    "INSERT INTO asignaciones (conjunto_asignaciones, id_profesor, id_modulo) VALUES (?, ?, ?)"
-                );
-                $stmt->execute([$nuevoConjunto, $mejor['id_profesor'], $mod['id_modulo']]);
-
-                $horasAsignadas[$mejor['id_profesor']] += $mod['horas'];
-                $cicloCurso[$mejor['id_profesor']][$mod['ciclo']][$mod['curso']] = true;
-                if ($mod['__fct']) {
-                    $fctAsignadas[$mejor['id_profesor']]++;
-                }
-            }
-        }
-
-        $pdo->commit();
-    } catch (Exception $e) {
-        $pdo->rollBack();
-        die('Error al crear asignaciones: ' . $e->getMessage());
-    }
+    $nuevoConjunto = (int)$pdo
+        ->query("SELECT IFNULL(MAX(conjunto_asignaciones), 0) + 1 FROM asignaciones")
+        ->fetchColumn();
     header('Location: asignaciones.php?conjunto=' . $nuevoConjunto);
     exit;
 }
@@ -360,17 +271,8 @@ $conjuntos = $pdo->query(
 
 $seleccionado = isset($_GET['conjunto']) ? (int)$_GET['conjunto'] : null;
 
-// Si se accede sin conjunto especificado, redirigir al siguiente número libre
-if ($seleccionado === null) {
-    $nuevo = (int)$pdo
-        ->query("SELECT IFNULL(MAX(conjunto_asignaciones), 0) + 1 FROM asignaciones")
-        ->fetchColumn();
-    header('Location: asignaciones.php?conjunto=' . $nuevo);
-    exit;
-}
-
 // Añadir el conjunto actual a la lista si aún no existe para que se muestre
-if (!in_array($seleccionado, $conjuntos, true)) {
+if ($seleccionado !== null && !in_array($seleccionado, $conjuntos, true)) {
     $conjuntos[] = $seleccionado;
     sort($conjuntos);
 }
@@ -514,7 +416,6 @@ $colorClasses = [
 
     <?php if ($seleccionado !== null): ?>
         <input type="hidden" id="conjuntoActual" value="<?= $seleccionado ?>">
-    <?php endif; ?>
         <div id="mainGrid" class="grid grid-cols-2 gap-2">
             <div id="profesores">
                 <h2 class="text-xl font-semibold mb-2">Horas por asignar: <span id="horasPorAsignar"><?= $horasPorAsignar ?></span>h (Inf <span id="porAsignarInf"><?= $horasPorAsignarInf ?></span>h, SAI <span id="porAsignarSai"><?= $horasPorAsignarSai ?></span>h)</h2>
@@ -645,6 +546,7 @@ $colorClasses = [
             </div>
         </div>
 
+    <?php endif; ?>
     </div>
 
     <script>
