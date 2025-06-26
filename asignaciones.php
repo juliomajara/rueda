@@ -576,33 +576,21 @@ $colorClasses = [
         const toggleBtn = document.getElementById('toggleSinAsignar');
         const sinAsignarDiv = document.getElementById('sinAsignar');
         const profList = document.getElementById('profesoresList');
+        const mainGrid = document.getElementById('mainGrid');
 
         if (toggleBtn && sinAsignarDiv && profList) {
             toggleBtn.addEventListener('click', () => {
                 const hidden = sinAsignarDiv.classList.toggle('hidden');
                 if (hidden) {
-                    const drops = Array.from(profList.querySelectorAll('.dropzone'));
-                    const half = Math.ceil(drops.length / 2);
-                    const col1 = document.createElement('div');
-                    const col2 = document.createElement('div');
-                    col1.id = 'profCol1';
-                    col2.id = 'profCol2';
-                    col1.className = 'space-y-2';
-                    col2.className = 'space-y-2';
-                    profList.innerHTML = '';
-                    drops.forEach((d, i) => (i < half ? col1 : col2).appendChild(d));
-                    profList.classList.add('grid', 'grid-cols-2', 'gap-2');
-                    profList.appendChild(col1);
-                    profList.appendChild(col2);
-                } else {
-                    const col1 = document.getElementById('profCol1');
-                    const col2 = document.getElementById('profCol2');
-                    if (col1 && col2) {
-                        const all = [...col1.children, ...col2.children];
-                        profList.innerHTML = '';
-                        all.forEach(d => profList.appendChild(d));
+                    if (mainGrid) {
+                        mainGrid.classList.remove('grid-cols-2');
+                        mainGrid.classList.add('grid-cols-1');
                     }
-                    profList.classList.remove('grid', 'grid-cols-2', 'gap-2');
+                } else {
+                    if (mainGrid) {
+                        mainGrid.classList.remove('grid-cols-1');
+                        mainGrid.classList.add('grid-cols-2');
+                    }
                 }
             });
         }
