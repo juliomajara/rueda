@@ -455,7 +455,7 @@ $colorClasses = [
                                 $warningText = '';
                                 if ($diff > 0) {
                                     $warningText = 'Faltan horas por asignar';
-                                } elseif ($diff < 0) {
+                                } elseif ($diff < -2) {
                                     $warningText = 'Demasiadas horas asignadas';
                                 } elseif ($d['profesor']['especialidad'] === 'SAI') {
                                     foreach ($d['modulos'] as $w) {
@@ -488,12 +488,11 @@ $colorClasses = [
                                 }
                             ?>
                             <span class="faltan text-black" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>"><?= ($diff >= 0 ? '-' : '+') . abs($diff) ?></span>
-                            )
+                            ) - <?= $d['profesor']['especialidad'] ?>
                             <span class="warning ml-1 inline-flex items-center <?= $warningText ? '' : 'hidden' ?>" data-profesor-id="<?= $d['profesor']['id_profesor'] ?>">
                                 <img src="images/warning.svg" alt="Advertencia" class="w-4 h-4">
                                 <span class="warning-text ml-1 text-xs"><?= $warningText ?></span>
                             </span>
-                            - <?= $d['profesor']['especialidad'] ?>
                         </span>
                         <?php foreach ($d['modulos'] as $m):
                             $cls = strtolower($m['ciclo']) . ($m['curso'] === '1º' ? '1' : '2');
@@ -609,7 +608,7 @@ $colorClasses = [
                             faltanTotal += diff;
                             if (z.dataset.especialidad === 'Informática') faltanInf += diff;
                             else if (z.dataset.especialidad === 'SAI') faltanSai += diff;
-                        } else if (diff < 0) {
+                        } else if (diff < -2) {
                             warningMsg = 'Demasiadas horas asignadas';
                         } else if (z.dataset.especialidad === 'SAI' && mods.some(m => m.dataset.atribucion === 'Informática')) {
                             warningMsg = 'Tiene asignados módulos de Informática';
