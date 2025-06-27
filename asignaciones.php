@@ -268,13 +268,14 @@ if (
 $conjuntos = $pdo->query(
     "SELECT DISTINCT conjunto_asignaciones FROM asignaciones ORDER BY conjunto_asignaciones"
 )->fetchAll(PDO::FETCH_COLUMN);
+$conjuntos = array_map('intval', $conjuntos);
 
 $seleccionado = isset($_GET['conjunto']) ? (int)$_GET['conjunto'] : null;
 
 // Añadir el conjunto actual a la lista si aún no existe para que se muestre
 if ($seleccionado !== null && !in_array($seleccionado, $conjuntos, true)) {
     $conjuntos[] = $seleccionado;
-    sort($conjuntos);
+    sort($conjuntos, SORT_NUMERIC);
 }
 
 
@@ -396,8 +397,8 @@ $colorClasses = [
                 <input type="hidden" name="conjunto_actual" value="<?= $seleccionado ?>">
                 <button type="submit" name="completar" class="btn btn-accent">Completar asignación</button>
             </form>
+            <button type="button" id="toggleSinAsignar" class="btn">Ocultar/Mostrar módulos sin asignar</button>
         <?php endif; ?>
-        <button type="button" id="toggleSinAsignar" class="btn">Ocultar/Mostrar módulos sin asignar</button>
     </div>
 
     <?php if ($conjuntos): ?>
