@@ -315,6 +315,7 @@ if ($seleccionado !== null) {
 $horasPorAsignar = 0;
 $horasPorAsignarInf = 0;
 $horasPorAsignarSai = 0;
+$horasPorAsignarAmb = 0;
 foreach ($datos as $d) {
     if ($d['diferencia'] > 0) {
         $horasPorAsignar += $d['diferencia'];
@@ -325,6 +326,7 @@ foreach ($datos as $d) {
         }
     }
 }
+$horasPorAsignarAmb = $horasPorAsignar;
 
 $allModulos = $pdo->query("SELECT * FROM modulos")->fetchAll(PDO::FETCH_ASSOC);
 $disponibles = array_filter($allModulos, function($m) use ($asignados) {
@@ -349,11 +351,14 @@ usort($disponibles, function($a, $b) use ($ordenCiclos) {
 $totalDisponibles = array_sum(array_column($disponibles, 'horas'));
 $totalDisponiblesInf = 0;
 $totalDisponiblesSai = 0;
+$totalDisponiblesAmb = 0;
 foreach ($disponibles as $m) {
     if ($m['atribucion'] === 'Informática') {
         $totalDisponiblesInf += $m['horas'];
     } elseif ($m['atribucion'] === 'SAI') {
         $totalDisponiblesSai += $m['horas'];
+    } else {
+        $totalDisponiblesAmb += $m['horas'];
     }
 }
 $colorClasses = [
@@ -423,7 +428,9 @@ $colorClasses = [
                 <?php $active = $c === $seleccionado; ?>
                 <li class="py-1 <?= $active ? 'bg-yellow-100 font-bold rounded px-1' : '' ?>">
                     <a class="link link-hover" href="?conjunto=<?= $c ?>">Asignación <?= $c ?></a>
-                    <a class="text-red-600 ml-2" href="?eliminar_asignacion=<?= $c ?>" onclick="return confirm('¿Seguro que quieres eliminar esta asignación?')">Eliminar</a>
+                    <a class="text-red-600 ml-2" href="?eliminar_asignacion=<?= $c ?>" onclick="return confirm('¿Seguro que quieres eliminar esta asignación?')">
+                        <img src="images/borrar.svg" alt="Eliminar" class="inline-block w-4 h-4">
+                    </a>
                 </li>
             <?php endforeach; ?>
         </ul>
@@ -435,7 +442,7 @@ $colorClasses = [
         <input type="hidden" id="conjuntoActual" value="<?= $seleccionado ?>">
         <div id="mainGrid" class="grid grid-cols-2 gap-2">
             <div id="profesores">
-                <h2 class="text-xl font-semibold mb-2">Horas por asignar: <span id="horasPorAsignar"><?= $horasPorAsignar ?></span>h (Inf <span id="porAsignarInf"><?= $horasPorAsignarInf ?></span>h, SAI <span id="porAsignarSai"><?= $horasPorAsignarSai ?></span>h)</h2>
+                <h2 class="text-xl font-semibold mb-2 text-center">Horas por asignar: Inf <span id="porAsignarInf"><?= $horasPorAsignarInf ?></span>h, SAI <span id="porAsignarSai"><?= $horasPorAsignarSai ?></span>h, Ambos <span id="horasPorAsignar"><?= $horasPorAsignarAmb ?></span>h</h2>
                 <div id="profesoresList" class="grid grid-cols-1 gap-2">
                 <?php foreach ($datos as $d): ?>
                     <?php
@@ -520,7 +527,7 @@ $colorClasses = [
                 </div>
             </div>
             <div id="sinAsignar" class="space-y-2 sticky top-0 max-h-screen overflow-y-auto">
-                <h2 class="text-xl font-semibold mb-2">Módulos sin asignar: <span id="totalSinAsignar"><?= $totalDisponibles ?></span>h (Inf <span id="sinInf"><?= $totalDisponiblesInf ?></span>h, SAI <span id="sinSai"><?= $totalDisponiblesSai ?></span>h)</h2>
+                <h2 class="text-xl font-semibold mb-2 text-center">Módulos sin asignar: Inf <span id="sinInf"><?= $totalDisponiblesInf ?></span>h, SAI <span id="sinSai"><?= $totalDisponiblesSai ?></span>h, Ambos <span id="sinAmb"><?= $totalDisponiblesAmb ?></span>h (Total <span id="totalSinAsignar"><?= $totalDisponibles ?></span>h)</h2>
                 <?php
                     $ciclos = ['SMRA','SMRB','ASIR','DAM','DAW'];
                     $grupos = [];
@@ -609,6 +616,7 @@ $colorClasses = [
             let sinAsignar = 0;
             let sinInf = 0;
             let sinSai = 0;
+            let sinAmb = 0;
             let faltanTotal = 0;
             let faltanInf = 0;
             let faltanSai = 0;
@@ -622,6 +630,7 @@ $colorClasses = [
                     if (profId === '0') {
                         if (m.dataset.atribucion === 'Informática') sinInf += horas;
                         else if (m.dataset.atribucion === 'SAI') sinSai += horas;
+                        else sinAmb += horas;
                     }
                 });
                 if (profId === '0') {
@@ -679,6 +688,8 @@ $colorClasses = [
             if (sinInfElem) sinInfElem.textContent = sinInf;
             const sinSaiElem = document.getElementById('sinSai');
             if (sinSaiElem) sinSaiElem.textContent = sinSai;
+            const sinAmbElem = document.getElementById('sinAmb');
+            if (sinAmbElem) sinAmbElem.textContent = sinAmb;
             const faltan = document.getElementById('horasPorAsignar');
             if (faltan) faltan.textContent = faltanTotal;
             const faltanInfElem = document.getElementById('porAsignarInf');
