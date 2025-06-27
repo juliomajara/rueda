@@ -383,7 +383,7 @@ $colorClasses = [
 <div class="w-full">
     <h1 class="text-3xl font-bold mb-4">Asignaciones</h1>
     <div class="flex gap-2 mb-4">
-        <a href="index.php" class="btn">
+        <a href="index.php" class="btn btn-soft btn-error">
             <img src="images/volver.svg" alt="Volver" class="inline-block w-6 h-6 mr-1">
             Volver
         </a>
@@ -409,7 +409,7 @@ $colorClasses = [
                     Completar Asignación
                 </button>
             </form>
-            <button type="button" id="toggleSinAsignar" class="btn">
+            <button type="button" id="toggleSinAsignar" class="btn btn-soft btn-warning">
                 <img src="images/ocultar.svg" alt="Ocultar" class="inline-block w-6 h-6 mr-1">
                 Ocultar módulos sin asignar
             </button>
