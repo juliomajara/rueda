@@ -442,7 +442,7 @@ $colorClasses = [
         <input type="hidden" id="conjuntoActual" value="<?= $seleccionado ?>">
         <div id="mainGrid" class="grid grid-cols-2 gap-2">
             <div id="profesores">
-                <h2 class="text-xl font-semibold mb-2 text-center">Horas por asignar: Inf <span id="porAsignarInf"><?= $horasPorAsignarInf ?></span>h, SAI <span id="porAsignarSai"><?= $horasPorAsignarSai ?></span>h, Ambos <span id="horasPorAsignar"><?= $horasPorAsignarAmb ?></span>h</h2>
+                <h2 class="text-xl font-semibold mb-2 text-center">Horas por asignar: Inf <span id="porAsignarInf"><?= $horasPorAsignarInf ?></span>h, SAI <span id="porAsignarSai"><?= $horasPorAsignarSai ?></span>h</h2>
                 <div id="profesoresList" class="grid grid-cols-1 gap-2">
                 <?php foreach ($datos as $d): ?>
                     <?php
