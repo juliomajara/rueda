@@ -383,21 +383,36 @@ $colorClasses = [
 <div class="w-full">
     <h1 class="text-3xl font-bold mb-4">Asignaciones</h1>
     <div class="flex gap-2 mb-4">
-        <a href="index.php" class="btn">Volver a inicio</a>
+        <a href="index.php" class="btn">
+            <img src="images/volver.svg" alt="Volver" class="inline-block w-4 h-4 mr-1">
+            Volver
+        </a>
         <form method="post">
-            <button type="submit" name="crear" class="btn btn-primary">Crear asignación</button>
+            <button type="submit" name="crear" class="btn btn-primary">
+                <img src="images/crear.svg" alt="Nueva Asignación" class="inline-block w-4 h-4 mr-1">
+                Nueva Asignación
+            </button>
         </form>
         <?php if ($seleccionado !== null): ?>
             <input type="hidden" id="conjuntoActual" value="<?= $seleccionado ?>">
             <form method="post">
                 <input type="hidden" name="conjunto_actual" value="<?= $seleccionado ?>">
-                <button type="submit" name="guardar" class="btn btn-secondary">Guardar asignación</button>
+                <button type="submit" name="guardar" class="btn btn-secondary">
+                    <img src="images/copiar.svg" alt="Copiar Asignación" class="inline-block w-4 h-4 mr-1">
+                    Copiar Asignación
+                </button>
             </form>
             <form method="post">
                 <input type="hidden" name="conjunto_actual" value="<?= $seleccionado ?>">
-                <button type="submit" name="completar" class="btn btn-accent">Completar asignación</button>
+                <button type="submit" name="completar" class="btn btn-accent">
+                    <img src="images/completar.svg" alt="Completar Asignación" class="inline-block w-4 h-4 mr-1">
+                    Completar Asignación
+                </button>
             </form>
-            <button type="button" id="toggleSinAsignar" class="btn">Ocultar/Mostrar módulos sin asignar</button>
+            <button type="button" id="toggleSinAsignar" class="btn">
+                <img src="images/ocultar.svg" alt="Ocultar" class="inline-block w-4 h-4 mr-1">
+                Ocultar módulos sin asignar
+            </button>
         <?php endif; ?>
     </div>
 
@@ -560,9 +575,13 @@ $colorClasses = [
         const mainGrid = document.getElementById('mainGrid');
 
         if (toggleBtn && sinAsignarDiv && profList) {
+            // Estado inicial del botón
+            toggleBtn.innerHTML = '<img src="images/ocultar.svg" alt="Ocultar" class="inline-block w-4 h-4 mr-1">Ocultar módulos sin asignar';
+
             toggleBtn.addEventListener('click', () => {
                 const hidden = sinAsignarDiv.classList.toggle('hidden');
                 if (hidden) {
+                    toggleBtn.innerHTML = '<img src="images/mostrar.svg" alt="Mostrar" class="inline-block w-4 h-4 mr-1">Mostrar módulos sin asignar';
                     if (mainGrid) {
                         mainGrid.classList.remove('grid-cols-2');
                         mainGrid.classList.add('grid-cols-1');
@@ -572,6 +591,7 @@ $colorClasses = [
                         profList.classList.add('grid-cols-2');
                     }
                 } else {
+                    toggleBtn.innerHTML = '<img src="images/ocultar.svg" alt="Ocultar" class="inline-block w-4 h-4 mr-1">Ocultar módulos sin asignar';
                     if (mainGrid) {
                         mainGrid.classList.remove('grid-cols-1');
                         mainGrid.classList.add('grid-cols-2');
