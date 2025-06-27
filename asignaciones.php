@@ -384,12 +384,12 @@ $colorClasses = [
     <h1 class="text-3xl font-bold mb-4">Asignaciones</h1>
     <div class="flex gap-2 mb-4">
         <a href="index.php" class="btn">
-            <img src="images/volver.svg" alt="Volver" class="inline-block w-4 h-4 mr-1">
+            <img src="images/volver.svg" alt="Volver" class="inline-block w-6 h-6 mr-1">
             Volver
         </a>
         <form method="post">
             <button type="submit" name="crear" class="btn btn-primary">
-                <img src="images/crear.svg" alt="Nueva Asignación" class="inline-block w-4 h-4 mr-1">
+                <img src="images/crear.svg" alt="Nueva Asignación" class="inline-block w-6 h-6 mr-1">
                 Nueva Asignación
             </button>
         </form>
@@ -398,19 +398,19 @@ $colorClasses = [
             <form method="post">
                 <input type="hidden" name="conjunto_actual" value="<?= $seleccionado ?>">
                 <button type="submit" name="guardar" class="btn btn-secondary">
-                    <img src="images/copiar.svg" alt="Copiar Asignación" class="inline-block w-4 h-4 mr-1">
+                    <img src="images/copiar.svg" alt="Copiar Asignación" class="inline-block w-6 h-6 mr-1">
                     Copiar Asignación
                 </button>
             </form>
             <form method="post">
                 <input type="hidden" name="conjunto_actual" value="<?= $seleccionado ?>">
                 <button type="submit" name="completar" class="btn btn-accent">
-                    <img src="images/completar.svg" alt="Completar Asignación" class="inline-block w-4 h-4 mr-1">
+                    <img src="images/completar.svg" alt="Completar Asignación" class="inline-block w-6 h-6 mr-1">
                     Completar Asignación
                 </button>
             </form>
             <button type="button" id="toggleSinAsignar" class="btn">
-                <img src="images/ocultar.svg" alt="Ocultar" class="inline-block w-4 h-4 mr-1">
+                <img src="images/ocultar.svg" alt="Ocultar" class="inline-block w-6 h-6 mr-1">
                 Ocultar módulos sin asignar
             </button>
         <?php endif; ?>
@@ -420,7 +420,8 @@ $colorClasses = [
         <h2 class="text-xl font-semibold mb-2">Conjuntos disponibles</h2>
         <ul class="list-disc list-inside mb-4">
             <?php foreach ($conjuntos as $c): ?>
-                <li>
+                <?php $active = $c === $seleccionado; ?>
+                <li class="py-1 <?= $active ? 'bg-yellow-100 font-bold rounded px-1' : '' ?>">
                     <a class="link link-hover" href="?conjunto=<?= $c ?>">Asignación <?= $c ?></a>
                     <a class="text-red-600 ml-2" href="?eliminar_asignacion=<?= $c ?>" onclick="return confirm('¿Seguro que quieres eliminar esta asignación?')">Eliminar</a>
                 </li>
@@ -576,12 +577,12 @@ $colorClasses = [
 
         if (toggleBtn && sinAsignarDiv && profList) {
             // Estado inicial del botón
-            toggleBtn.innerHTML = '<img src="images/ocultar.svg" alt="Ocultar" class="inline-block w-4 h-4 mr-1">Ocultar módulos sin asignar';
+            toggleBtn.innerHTML = '<img src="images/ocultar.svg" alt="Ocultar" class="inline-block w-6 h-6 mr-1">Ocultar módulos sin asignar';
 
             toggleBtn.addEventListener('click', () => {
                 const hidden = sinAsignarDiv.classList.toggle('hidden');
                 if (hidden) {
-                    toggleBtn.innerHTML = '<img src="images/mostrar.svg" alt="Mostrar" class="inline-block w-4 h-4 mr-1">Mostrar módulos sin asignar';
+                    toggleBtn.innerHTML = '<img src="images/mostrar.svg" alt="Mostrar" class="inline-block w-6 h-6 mr-1">Mostrar módulos sin asignar';
                     if (mainGrid) {
                         mainGrid.classList.remove('grid-cols-2');
                         mainGrid.classList.add('grid-cols-1');
@@ -591,7 +592,7 @@ $colorClasses = [
                         profList.classList.add('grid-cols-2');
                     }
                 } else {
-                    toggleBtn.innerHTML = '<img src="images/ocultar.svg" alt="Ocultar" class="inline-block w-4 h-4 mr-1">Ocultar módulos sin asignar';
+                    toggleBtn.innerHTML = '<img src="images/ocultar.svg" alt="Ocultar" class="inline-block w-6 h-6 mr-1">Ocultar módulos sin asignar';
                     if (mainGrid) {
                         mainGrid.classList.remove('grid-cols-1');
                         mainGrid.classList.add('grid-cols-2');
