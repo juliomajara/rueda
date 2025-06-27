@@ -132,129 +132,117 @@ if (
             return !in_array($m['id_modulo'], $asignadosIds);
         });
 
-        // Clasificar módulos por atribución y FCT/FFE
-        $saiNorm = $saiFct = $infNorm = $infFct = $ambNorm = $ambFct = [];
+        // Clasificar los módulos restantes en normales y FCT/FFE
+        $modsFct = [];
+        $modsNorm = [];
         foreach ($modulosPendientes as $m) {
             $esFct = stripos($m['abreviatura'], 'FCT') !== false || stripos($m['abreviatura'], 'FFE') !== false || stripos($m['nombre'], 'FCT') !== false || stripos($m['nombre'], 'FFE') !== false;
             $m['__fct'] = $esFct;
-            $target =& $ambNorm; // default
-            if ($m['atribucion'] === 'SAI') {
-                if ($esFct) {
-                    $target =& $saiFct;
-                } else {
-                    $target =& $saiNorm;
-                }
-            } elseif ($m['atribucion'] === 'Informática') {
-                if ($esFct) {
-                    $target =& $infFct;
-                } else {
-                    $target =& $infNorm;
-                }
-            } else { // Ambos
-                if ($esFct) {
-                    $target =& $ambFct;
-                } else {
-                    $target =& $ambNorm;
-                }
+            if ($esFct) {
+                $modsFct[] = $m;
+            } else {
+                $modsNorm[] = $m;
             }
-            $target[] = $m;
         }
 
         $sortHoras = function ($a, $b) {
             return $b['horas'] <=> $a['horas'];
         };
-        foreach ([$saiNorm, $saiFct, $infNorm, $infFct, $ambNorm, $ambFct] as &$arr) {
-            usort($arr, $sortHoras);
-        }
-        unset($arr);
+        usort($modsNorm, $sortHoras);
+        usort($modsFct, $sortHoras);
 
-        // Helper para asignar listas de módulos
-        $asignarLista = function (&$lista, callable $profCond) use (&$profesores, &$horasAsignadas, &$fctAsignadas, &$cicloCurso, $actual, $pdo) {
-            foreach ($lista as $idx => $mod) {
-                $mejorPos = null;
-                $mejorNeg = null;
-                $mejorPosDiff = PHP_INT_MAX;
-                $mejorNegDiff = -3;
+        // Funciones de ayuda para validar y registrar la asignación
+        $puedeAsignar = function ($prof, $mod) use (&$horasAsignadas, &$fctAsignadas, &$cicloCurso) {
+            if ($prof['especialidad'] === 'SAI' && $mod['atribucion'] === 'Informática') {
+                return false;
+            }
 
-                foreach ($profesores as $prof) {
-                    if (!$profCond($prof)) {
-                        continue;
-                    }
+            $pid = $prof['id_profesor'];
 
-                    if ($prof['especialidad'] === 'SAI' && $mod['atribucion'] === 'Informática') {
-                        continue;
-                    }
-
-                    $pid = $prof['id_profesor'];
-
-                    if ($mod['__fct']) {
-                        if ($fctAsignadas[$pid] >= 1) {
-                            continue;
-                        }
-                        $cc = $cicloCurso[$pid][$mod['ciclo']][$mod['curso']] ?? 0;
-                        if ($cc < 1) {
-                            continue;
-                        }
-                    }
-
-                    $nuevoTotal = $horasAsignadas[$pid] + $mod['horas'];
-                    if ($nuevoTotal > $prof['horas'] + 2) {
-                        continue;
-                    }
-
-                    $diff = $prof['horas'] - $nuevoTotal;
-                    if ($diff >= 0) {
-                        $bestHoras = $mejorPos ? $horasAsignadas[$mejorPos['id_profesor']] : PHP_INT_MAX;
-                        if ($diff < $mejorPosDiff || ($diff === $mejorPosDiff && $horasAsignadas[$pid] < $bestHoras)) {
-                            $mejorPos = $prof;
-                            $mejorPosDiff = $diff;
-                        }
-                    } elseif ($diff >= -2 && $mejorPos === null) {
-                        $bestHoras = $mejorNeg ? $horasAsignadas[$mejorNeg['id_profesor']] : PHP_INT_MAX;
-                        if ($diff > $mejorNegDiff || ($diff === $mejorNegDiff && $horasAsignadas[$pid] < $bestHoras)) {
-                            $mejorNeg = $prof;
-                            $mejorNegDiff = $diff;
-                        }
-                    }
+            if ($mod['__fct']) {
+                if ($fctAsignadas[$pid] >= 1) {
+                    return false;
                 }
-
-                $best = $mejorPos ?? $mejorNeg;
-                if ($best !== null) {
-                    $stmt = $pdo->prepare('INSERT INTO asignaciones (conjunto_asignaciones, id_profesor, id_modulo) VALUES (?, ?, ?)');
-                    $stmt->execute([$actual, $best['id_profesor'], $mod['id_modulo']]);
-
-                    $pid = $best['id_profesor'];
-                    $horasAsignadas[$pid] += $mod['horas'];
-                    if (!isset($cicloCurso[$pid][$mod['ciclo']][$mod['curso']])) {
-                        $cicloCurso[$pid][$mod['ciclo']][$mod['curso']] = 0;
-                    }
-                    if ($mod['__fct']) {
-                        $fctAsignadas[$pid]++;
-                    } else {
-                        $cicloCurso[$pid][$mod['ciclo']][$mod['curso']]++;
-                    }
-
-                    unset($lista[$idx]);
+                $cc = $cicloCurso[$pid][$mod['ciclo']][$mod['curso']] ?? 0;
+                if ($cc < 1) {
+                    return false;
                 }
             }
-            $lista = array_values($lista);
+
+            $nuevoTotal = $horasAsignadas[$pid] + $mod['horas'];
+            if ($nuevoTotal > $prof['horas'] + 2) {
+                return false;
+            }
+
+            return true;
         };
 
-        // 1. Módulos SAI a profesores SAI
-        $asignarLista($saiNorm, function ($p) { return $p['especialidad'] === 'SAI'; });
-        $asignarLista($saiFct, function ($p) { return $p['especialidad'] === 'SAI'; });
+        $realizarAsignacion = function ($prof, $mod) use (&$horasAsignadas, &$fctAsignadas, &$cicloCurso, $actual, $pdo) {
+            $stmt = $pdo->prepare('INSERT INTO asignaciones (conjunto_asignaciones, id_profesor, id_modulo) VALUES (?, ?, ?)');
+            $stmt->execute([$actual, $prof['id_profesor'], $mod['id_modulo']]);
 
-        // 2. Módulos Informática a profesores de Informática
-        $asignarLista($infNorm, function ($p) { return $p['especialidad'] === 'Informática'; });
-        $asignarLista($infFct, function ($p) { return $p['especialidad'] === 'Informática'; });
+            $pid = $prof['id_profesor'];
+            $horasAsignadas[$pid] += $mod['horas'];
+            if (!isset($cicloCurso[$pid][$mod['ciclo']][$mod['curso']])) {
+                $cicloCurso[$pid][$mod['ciclo']][$mod['curso']] = 0;
+            }
+            if ($mod['__fct']) {
+                $fctAsignadas[$pid]++;
+            } else {
+                $cicloCurso[$pid][$mod['ciclo']][$mod['curso']]++;
+            }
+        };
 
-        // 3. Completar SAI con módulos "Ambos"
-        $asignarLista($ambNorm, function ($p) { return $p['especialidad'] === 'SAI'; });
-        $asignarLista($ambFct, function ($p) { return $p['especialidad'] === 'SAI'; });
+        $indiceProf = 0;
+        $totalProfes = count($profesores);
 
-        // 4. Restantes módulos SAI y "Ambos" a Informática
-        $restantes = array_merge($saiNorm, $saiFct, $ambNorm, $ambFct);
-        $asignarLista($restantes, function ($p) { return $p['especialidad'] === 'Informática'; });
+        $asignarRonda = function (&$lista, $unico) use (&$profesores, &$indiceProf, $totalProfes, $puedeAsignar, $realizarAsignacion) {
+            if (empty($lista)) {
+                return;
+            }
+            for ($i = 0; $i < $totalProfes && !empty($lista); $i++) {
+                $prof = $profesores[$indiceProf];
+                foreach ($lista as $idx => $m) {
+                    if ($puedeAsignar($prof, $m)) {
+                        $realizarAsignacion($prof, $m);
+                        unset($lista[$idx]);
+                        $lista = array_values($lista);
+                        break;
+                    }
+                }
+                $indiceProf = ($indiceProf + 1) % $totalProfes;
+            }
+            if (!$unico && !empty($lista)) {
+                $cambio = true;
+                while ($cambio && !empty($lista)) {
+                    $cambio = false;
+                    for ($i = 0; $i < $totalProfes && !empty($lista); $i++) {
+                        $prof = $profesores[$indiceProf];
+                        foreach ($lista as $idx => $m) {
+                            if ($puedeAsignar($prof, $m)) {
+                                $realizarAsignacion($prof, $m);
+                                unset($lista[$idx]);
+                                $lista = array_values($lista);
+                                $cambio = true;
+                                break;
+                            }
+                        }
+                        $indiceProf = ($indiceProf + 1) % $totalProfes;
+                    }
+                }
+            }
+        };
+
+        // Paso 1: asignar un módulo grande a cada profesor
+        $asignarRonda($modsNorm, true);
+
+        // Paso 2: asignar módulos FCT/FFE
+        $asignarRonda($modsFct, true);
+
+        // Paso 3: completar con el resto de módulos
+        $restantes = array_merge($modsNorm, $modsFct);
+        usort($restantes, $sortHoras);
+        $asignarRonda($restantes, false);
 
         $pdo->commit();
     } catch (Exception $e) {
