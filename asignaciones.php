@@ -402,6 +402,9 @@ $colorClasses = [
                     Completar Asignación
                 </button>
             </form>
+            <a href="exportar_excel.php?conjunto=<?= $seleccionado ?>" class="btn btn-outline">
+                Exportar a Excel
+            </a>
             <button type="button" id="toggleSinAsignar" class="btn btn-soft btn-warning">
                 <img src="images/ocultar.svg" alt="Ocultar" class="inline-block w-6 h-6 mr-1">
                 Ocultar módulos sin asignar
