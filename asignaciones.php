@@ -511,7 +511,7 @@ $colorClasses = [
                             }
                         ?>
                             <div class="modulo <?= $bg ?> px-1 py-0.5 <?= $border ?> rounded cursor-grab text-xs text-center" style="<?= $style ?>" draggable="true" data-id="<?= $m['id_modulo'] ?>" data-horas="<?= $m['horas'] ?>" data-ciclo="<?= $m['ciclo'] ?>" data-curso="<?= $m['curso'] ?>" data-atribucion="<?= $m['atribucion'] ?>" data-fct="<?= $isFct ? 1 : 0 ?>" title="<?= htmlspecialchars($m['nombre']) ?> - <?= $cursoCiclo ?>">
-                                <?= htmlspecialchars($m['abreviatura']) ?> (<?= $m['horas'] ?>h)
+                                <?= htmlspecialchars($m['abreviatura']) ?> <?= $m['horas'] ?>
                             </div>
                         <?php endforeach; ?>
                     </div>
@@ -557,7 +557,7 @@ $colorClasses = [
                                     }
                                 ?>
                                     <div class="modulo <?= $bg ?> px-1 py-0.5 <?= $border ?> rounded cursor-grab text-xs text-center" style="<?= $style ?>" draggable="true" data-id="<?= $m['id_modulo'] ?>" data-horas="<?= $m['horas'] ?>" data-ciclo="<?= $m['ciclo'] ?>" data-curso="<?= $m['curso'] ?>" data-atribucion="<?= $m['atribucion'] ?>" data-fct="<?= $isFct ? 1 : 0 ?>" title="<?= htmlspecialchars($m['nombre']) ?> - <?= $cursoCiclo ?>">
-                                        <?= htmlspecialchars($m['abreviatura']) ?> (<?= $m['horas'] ?>h)
+                                        <?= htmlspecialchars($m['abreviatura']) ?> <?= $m['horas'] ?>
                                     </div>
                                 <?php endforeach; ?>
                             <?php endif; ?>
