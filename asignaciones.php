@@ -374,8 +374,8 @@ $colorClasses = [
 </head>
 <body class="p-4">
 <div class="w-full">
-    <h1 class="text-3xl font-bold mb-4">Asignaciones</h1>
-    <div class="flex gap-2 mb-4">
+    <h1 class="text-3xl font-bold mb-4 text-center">Asignaciones</h1>
+    <div class="flex gap-2 mb-4 justify-center">
         <a href="index.php" class="btn btn-soft btn-error">
             <img src="images/volver.svg" alt="Volver" class="inline-block w-6 h-6 mr-1">
             Volver
@@ -430,7 +430,11 @@ $colorClasses = [
         <input type="hidden" id="conjuntoActual" value="<?= $seleccionado ?>">
         <div id="mainGrid" class="grid grid-cols-2 gap-2">
             <div id="profesores">
-                <h2 class="text-xl font-semibold mb-2 text-center">Horas por asignar: Inf <span id="porAsignarInf"><?= $horasPorAsignarInf ?></span>h, SAI <span id="porAsignarSai"><?= $horasPorAsignarSai ?></span>h</h2>
+                <h2 class="text-xl font-semibold mb-2 text-center">
+                    Horas por asignar: <span id="horasPorAsignar"><?= $horasPorAsignar ?></span>h<br>
+                    Informática <span id="porAsignarInf"><?= $horasPorAsignarInf ?></span>h /
+                    SAI <span id="porAsignarSai"><?= $horasPorAsignarSai ?></span>h
+                </h2>
                 <div id="profesoresList" class="grid grid-cols-1 gap-2">
                 <?php foreach ($datos as $d): ?>
                     <?php
@@ -515,7 +519,12 @@ $colorClasses = [
                 </div>
             </div>
             <div id="sinAsignar" class="space-y-2 sticky top-0 max-h-screen overflow-y-auto">
-                <h2 class="text-xl font-semibold mb-2 text-center">Módulos sin asignar: Inf <span id="sinInf"><?= $totalDisponiblesInf ?></span>h, SAI <span id="sinSai"><?= $totalDisponiblesSai ?></span>h, Ambos <span id="sinAmb"><?= $totalDisponiblesAmb ?></span>h (Total <span id="totalSinAsignar"><?= $totalDisponibles ?></span>h)</h2>
+                <h2 class="text-xl font-semibold mb-2 text-center">
+                    Horas por asignar <span id="totalSinAsignar"><?= $totalDisponibles ?></span>h<br>
+                    Informática <span id="sinInf"><?= $totalDisponiblesInf ?></span>h /
+                    SAI <span id="sinSai"><?= $totalDisponiblesSai ?></span>h /
+                    Ambos <span id="sinAmb"><?= $totalDisponiblesAmb ?></span>h
+                </h2>
                 <?php
                     $ciclos = ['SMRA','SMRB','ASIR','DAM','DAW'];
                     $grupos = [];
