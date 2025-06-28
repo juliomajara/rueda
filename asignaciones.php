@@ -528,14 +528,22 @@ $colorClasses = [
                 <?php
                     $ciclos = ['SMRA','SMRB','ASIR','DAM','DAW'];
                     $grupos = [];
+                    $horasPorCiclo = [];
                     foreach ($disponibles as $m) {
                         $grupos[$m['ciclo']][] = $m;
+                        if (!isset($horasPorCiclo[$m['ciclo']])) {
+                            $horasPorCiclo[$m['ciclo']] = 0;
+                        }
+                        $horasPorCiclo[$m['ciclo']] += $m['horas'];
                     }
                 ?>
                 <div class="space-y-2">
                     <?php foreach ($ciclos as $c): ?>
+                        <?php $horas = $horasPorCiclo[$c] ?? 0; ?>
                         <div class="dropzone w-full p-2 border border-dashed rounded-box bg-base-200 flex flex-wrap gap-1 mb-2 min-h-20" data-profesor-id="0" data-ciclo="<?= $c ?>">
-                            <span class="w-full text-center font-bold mb-1"><?= $c ?></span>
+                            <span class="w-full text-center font-bold mb-1">
+                                <?= $c ?> (<span id="horas-<?= strtolower($c) ?>"><?= $horas ?></span> h)
+                            </span>
                             <?php if (!empty($grupos[$c])): ?>
                                 <?php foreach ($grupos[$c] as $m):
                                     $cls = strtolower($m['ciclo']) . ($m['curso'] === '1º' ? '1' : '2');
@@ -617,6 +625,7 @@ $colorClasses = [
             let faltanTotal = 0;
             let faltanInf = 0;
             let faltanSai = 0;
+            const horasPorCiclo = {};
             document.querySelectorAll('.dropzone').forEach(z => {
                 const profId = z.dataset.profesorId;
                 let total = 0;
@@ -632,6 +641,7 @@ $colorClasses = [
                 });
                 if (profId === '0') {
                     sinAsignar += total;
+                    horasPorCiclo[z.dataset.ciclo] = total;
                 } else {
                     const totalElem = document.querySelector(`.total[data-profesor-id="${profId}"]`);
                     const faltanElem = document.querySelector(`.faltan[data-profesor-id="${profId}"]`);
@@ -687,6 +697,10 @@ $colorClasses = [
             if (sinSaiElem) sinSaiElem.textContent = sinSai;
             const sinAmbElem = document.getElementById('sinAmb');
             if (sinAmbElem) sinAmbElem.textContent = sinAmb;
+            document.querySelectorAll('[id^="horas-"]').forEach(sp => {
+                const ciclo = sp.id.replace('horas-', '').toUpperCase();
+                sp.textContent = horasPorCiclo[ciclo] ?? 0;
+            });
             const faltan = document.getElementById('horasPorAsignar');
             if (faltan) faltan.textContent = faltanTotal;
             const faltanInfElem = document.getElementById('porAsignarInf');
