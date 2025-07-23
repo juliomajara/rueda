@@ -206,8 +206,12 @@ $colorClasses = [
                                 <td><?= $p['especialidad'] ?></td>
                                 <td><?= $p['numero_de_orden'] ?></td>
                                 <td class="flex items-center gap-2">
-                                    <a href="?editar=<?= $p['id_profesor'] ?>&tipo=profesor" class="link link-primary"><img src="images/editar.svg" alt="Editar"></a>
-                                    <a href="?eliminar=<?= $p['id_profesor'] ?>&tipo=profesor" class="link link-secondary" onclick="return confirm('¿Seguro que quieres eliminar este profesor?')"><img src="images/borrar.svg" alt="Eliminar"></a>
+                                    <a href="?editar=<?= $p['id_profesor'] ?>&tipo=profesor" class="link link-primary">
+                                        <img src="images/editar.svg" alt="Editar" class="inline-block w-4 h-4">
+                                    </a>
+                                    <a href="?eliminar=<?= $p['id_profesor'] ?>&tipo=profesor" class="link link-secondary" onclick="return confirm('¿Seguro que quieres eliminar este profesor?')">
+                                        <img src="images/borrar.svg" alt="Eliminar" class="inline-block w-4 h-4">
+                                    </a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -298,8 +302,12 @@ $colorClasses = [
                                 <td><?= $m['ciclo'] ?></td>
                                 <td><?= $m['atribucion'] ?></td>
                                 <td class="flex items-center gap-2">
-                                    <a href="?editar=<?= $m['id_modulo'] ?>&tipo=modulo" class="link link-primary"><img src="images/editar.svg" alt="Editar"></a>
-                                    <a href="?eliminar=<?= $m['id_modulo'] ?>&tipo=modulo" class="link link-secondary" onclick="return confirm('¿Seguro que quieres eliminar este módulo?')"><img src="images/borrar.svg" alt="Eliminar"></a>
+                                    <a href="?editar=<?= $m['id_modulo'] ?>&tipo=modulo" class="link link-primary">
+                                        <img src="images/editar.svg" alt="Editar" class="inline-block w-4 h-4">
+                                    </a>
+                                    <a href="?eliminar=<?= $m['id_modulo'] ?>&tipo=modulo" class="link link-secondary" onclick="return confirm('¿Seguro que quieres eliminar este módulo?')">
+                                        <img src="images/borrar.svg" alt="Eliminar" class="inline-block w-4 h-4">
+                                    </a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
